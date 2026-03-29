@@ -10,6 +10,7 @@ struct StateVector {
     Vector3 velocity;
 };
 
+/// @brief 궤도 전파 결과 
 struct PropagationPoint {
     double time;            //unit : sec(seconds)
     StateVector state;
