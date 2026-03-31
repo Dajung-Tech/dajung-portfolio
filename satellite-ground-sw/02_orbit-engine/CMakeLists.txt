@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(02_orbit-engine
+        common/ReportWriter.cpp
         core/Vector3.cpp
+        core/CoordinateConverter.cpp
         src/OrbitPropagator.cpp
         src/main.cpp
 )

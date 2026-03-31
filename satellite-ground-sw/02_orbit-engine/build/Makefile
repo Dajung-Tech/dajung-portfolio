@@ -129,6 +129,54 @@ depend:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/02_orbit-engine.dir/build.make CMakeFiles/02_orbit-engine.dir/build
 .PHONY : 02_orbit-engine/fast
 
+common/ReportWriter.o: common/ReportWriter.cpp.o
+.PHONY : common/ReportWriter.o
+
+# target to build an object file
+common/ReportWriter.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/02_orbit-engine.dir/build.make CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o
+.PHONY : common/ReportWriter.cpp.o
+
+common/ReportWriter.i: common/ReportWriter.cpp.i
+.PHONY : common/ReportWriter.i
+
+# target to preprocess a source file
+common/ReportWriter.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/02_orbit-engine.dir/build.make CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.i
+.PHONY : common/ReportWriter.cpp.i
+
+common/ReportWriter.s: common/ReportWriter.cpp.s
+.PHONY : common/ReportWriter.s
+
+# target to generate assembly for a file
+common/ReportWriter.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/02_orbit-engine.dir/build.make CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.s
+.PHONY : common/ReportWriter.cpp.s
+
+core/CoordinateConverter.o: core/CoordinateConverter.cpp.o
+.PHONY : core/CoordinateConverter.o
+
+# target to build an object file
+core/CoordinateConverter.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/02_orbit-engine.dir/build.make CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o
+.PHONY : core/CoordinateConverter.cpp.o
+
+core/CoordinateConverter.i: core/CoordinateConverter.cpp.i
+.PHONY : core/CoordinateConverter.i
+
+# target to preprocess a source file
+core/CoordinateConverter.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/02_orbit-engine.dir/build.make CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.i
+.PHONY : core/CoordinateConverter.cpp.i
+
+core/CoordinateConverter.s: core/CoordinateConverter.cpp.s
+.PHONY : core/CoordinateConverter.s
+
+# target to generate assembly for a file
+core/CoordinateConverter.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/02_orbit-engine.dir/build.make CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.s
+.PHONY : core/CoordinateConverter.cpp.s
+
 core/Vector3.o: core/Vector3.cpp.o
 .PHONY : core/Vector3.o
 
@@ -210,6 +258,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... 02_orbit-engine"
+	@echo "... common/ReportWriter.o"
+	@echo "... common/ReportWriter.i"
+	@echo "... common/ReportWriter.s"
+	@echo "... core/CoordinateConverter.o"
+	@echo "... core/CoordinateConverter.i"
+	@echo "... core/CoordinateConverter.s"
 	@echo "... core/Vector3.o"
 	@echo "... core/Vector3.i"
 	@echo "... core/Vector3.s"
