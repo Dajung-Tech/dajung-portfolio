@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/CMakeFiles/googletest-populate"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/CMakeFiles/googletest-populate.rule"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/CMakeFiles/googletest-populate-complete.rule"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-build.rule"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-configure.rule"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-download.rule"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-install.rule"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-mkdir.rule"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-patch.rule"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-test.rule"
+		},
+		{
+			"file" : "/Users/stclab/Desktop/dajung_lab/repo/dajung-portfolio/lockfree-queue/02_lockfree-queue/build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"googletest-populate"
+		],
+		"name" : "googletest-populate"
+	}
+}
