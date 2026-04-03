@@ -1,4 +1,5 @@
 ## Ground Track Visualization
+위성 지상체 소프트웨어 개발 과정에서 수행한 기능 이해를 바탕으로 개인적으로 구현한 프로젝트입니다.
 ![Ground Track](02_orbit-engine/output/ground_track_map.png)
 
 ### 1. Orbit Propagation
