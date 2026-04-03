@@ -10,7 +10,7 @@ bool ReportWriter::WriteCsv(const std::string& path, const std::vector<double>& 
         return false;
     }
 
-    ofs << "time_sec, latitude, longtidue, altitude\n";
+    ofs << "time_sec, latitude, longitude, altitude\n";
     ofs << std::fixed << std::setprecision(6);
 
     for(size_t i=0; i < ground_track.size(); ++i) {

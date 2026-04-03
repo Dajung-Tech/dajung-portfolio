@@ -1,4 +1,4 @@
-time_sec, latitude, longtidue, altitude
+time_sec, latitude, longitude, altitude
 0.000000,0.000000,0.000000,621.863000
 60.000000,0.000000,3.454560,624.304474
 120.000000,0.000000,6.909120,626.751480

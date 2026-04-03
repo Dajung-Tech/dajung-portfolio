@@ -1,3 +1,6 @@
+## Ground Track Visualization
+![Ground Track](02_orbit-engine/output/ground_track_map.png)
+
 ### 1. Orbit Propagation
 - 초기 상태벡터(Position, Velocity)를 기반으로 궤도 전파 수행
 - 2-body 중력 모델 기반의 계산 수행
