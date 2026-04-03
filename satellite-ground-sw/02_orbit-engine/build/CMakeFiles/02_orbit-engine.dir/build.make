@@ -72,10 +72,24 @@ include CMakeFiles/02_orbit-engine.dir/flags.make
 CMakeFiles/02_orbit-engine.dir/codegen:
 .PHONY : CMakeFiles/02_orbit-engine.dir/codegen
 
+CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o: CMakeFiles/02_orbit-engine.dir/flags.make
+CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o: /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/common/ReportWriter.cpp
+CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o: CMakeFiles/02_orbit-engine.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o -MF CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o.d -o CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o -c /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/common/ReportWriter.cpp
+
+CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/common/ReportWriter.cpp > CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.i
+
+CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/common/ReportWriter.cpp -o CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.s
+
 CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o: CMakeFiles/02_orbit-engine.dir/flags.make
 CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o: /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/core/Vector3.cpp
 CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o: CMakeFiles/02_orbit-engine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o -MF CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o.d -o CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o -c /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/core/Vector3.cpp
 
 CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.i: cmake_force
@@ -86,10 +100,24 @@ CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/core/Vector3.cpp -o CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.s
 
+CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o: CMakeFiles/02_orbit-engine.dir/flags.make
+CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o: /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/core/CoordinateConverter.cpp
+CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o: CMakeFiles/02_orbit-engine.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o -MF CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o.d -o CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o -c /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/core/CoordinateConverter.cpp
+
+CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/core/CoordinateConverter.cpp > CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.i
+
+CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/core/CoordinateConverter.cpp -o CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.s
+
 CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o: CMakeFiles/02_orbit-engine.dir/flags.make
 CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o: /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/src/OrbitPropagator.cpp
 CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o: CMakeFiles/02_orbit-engine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o -MF CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o.d -o CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o -c /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/src/OrbitPropagator.cpp
 
 CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.i: cmake_force
@@ -103,7 +131,7 @@ CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.s: cmake_force
 CMakeFiles/02_orbit-engine.dir/src/main.cpp.o: CMakeFiles/02_orbit-engine.dir/flags.make
 CMakeFiles/02_orbit-engine.dir/src/main.cpp.o: /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/src/main.cpp
 CMakeFiles/02_orbit-engine.dir/src/main.cpp.o: CMakeFiles/02_orbit-engine.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/02_orbit-engine.dir/src/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/02_orbit-engine.dir/src/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/02_orbit-engine.dir/src/main.cpp.o -MF CMakeFiles/02_orbit-engine.dir/src/main.cpp.o.d -o CMakeFiles/02_orbit-engine.dir/src/main.cpp.o -c /Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/src/main.cpp
 
 CMakeFiles/02_orbit-engine.dir/src/main.cpp.i: cmake_force
@@ -116,19 +144,23 @@ CMakeFiles/02_orbit-engine.dir/src/main.cpp.s: cmake_force
 
 # Object files for target 02_orbit-engine
 02_orbit__engine_OBJECTS = \
+"CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o" \
 "CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o" \
+"CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o" \
 "CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o" \
 "CMakeFiles/02_orbit-engine.dir/src/main.cpp.o"
 
 # External object files for target 02_orbit-engine
 02_orbit__engine_EXTERNAL_OBJECTS =
 
+02_orbit-engine: CMakeFiles/02_orbit-engine.dir/common/ReportWriter.cpp.o
 02_orbit-engine: CMakeFiles/02_orbit-engine.dir/core/Vector3.cpp.o
+02_orbit-engine: CMakeFiles/02_orbit-engine.dir/core/CoordinateConverter.cpp.o
 02_orbit-engine: CMakeFiles/02_orbit-engine.dir/src/OrbitPropagator.cpp.o
 02_orbit-engine: CMakeFiles/02_orbit-engine.dir/src/main.cpp.o
 02_orbit-engine: CMakeFiles/02_orbit-engine.dir/build.make
 02_orbit-engine: CMakeFiles/02_orbit-engine.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable 02_orbit-engine"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/dajung/Desktop/github/portfolio/dajung-portfolio/satellite-ground-sw/02_orbit-engine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable 02_orbit-engine"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/02_orbit-engine.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
 
+#include "../common/ReportWriter.h"
 #include "../core/StateVector.h"
+#include "../core/CoordinateConverter.h"
 #include "OrbitPropagator.h"
 
 int main() {
@@ -31,6 +33,27 @@ int main() {
                 << last.state.velocity.getX() << ", "
                 << last.state.velocity.getY() << ", "
                 << last.state.velocity.getZ() << "\n";
+        
+        std::cout << "Generated points : " << trajectory.size() << "\n";
+
+        CoordinateConverter converter;
+        std::vector<double> time;
+        std::vector<GeodeticPoint> ground_track;
+
+        for(const auto& point : trajectory) {
+            Vector3 ecef = converter.EciToEcef(point.state.position, point.time);
+            GeodeticPoint geo = converter.EcefToGeodetic(ecef);
+
+            time.push_back(point.time);
+            ground_track.push_back(geo);
+        }
+
+        // csv 파일 저장
+        if(ReportWriter::WriteCsv("../output/ground_track.csv", time, ground_track)) {
+            std::cout << "ground_track.csv saved. \n";
+        }else {
+            std::cout << "failed to save ground track. \n";
+        }
     } catch(const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << "\n";
         return 1;
