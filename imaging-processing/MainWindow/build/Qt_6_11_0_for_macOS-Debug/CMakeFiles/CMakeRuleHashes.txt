@@ -1,0 +1,7 @@
+# Hashes of file build rules.
+7575064f2546e6d3d9b68983a68b6a0a .qt/rcc/qrc_MainWindow_translations.cpp
+9b931bb6fe420be5530b0d1520302da7 CMakeFiles/MainWindow_autogen
+9b931bb6fe420be5530b0d1520302da7 CMakeFiles/MainWindow_lrelease
+272f02b13e4d184861bb24bb6cf8664f CMakeFiles/MainWindow_lupdate
+2bf0fb85d3251534a3cf3ad1f9602385 MainWindow_autogen/timestamp
+25c7d2da957f9a6286d3899239ef182b MainWindow_ko_KR.qm

@@ -1,0 +1,115 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-dcb13e1dec09c6376687.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "MainWindow",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "MainWindow::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-MainWindow-Debug-b4d846637f0b4f5d8d4b.json",
+					"name" : "MainWindow",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "MainWindow_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-MainWindow_autogen-Debug-174923451c1360b37a1f.json",
+					"name" : "MainWindow_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "MainWindow_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-MainWindow_autogen_timestamp_deps-Debug-3859f33e9cb80e9f2959.json",
+					"name" : "MainWindow_autogen_timestamp_deps",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "MainWindow_lrelease::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-MainWindow_lrelease-Debug-df211d86a2239cee2126.json",
+					"name" : "MainWindow_lrelease",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "MainWindow_lupdate::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-MainWindow_lupdate-Debug-1ddc35cd093b0b8fd4ff.json",
+					"name" : "MainWindow_lupdate",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "release_translations::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-release_translations-Debug-211be058b34c005e5803.json",
+					"name" : "release_translations",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "update_translations::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-update_translations-Debug-e4501e22685714c60b03.json",
+					"name" : "update_translations",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/dajung/Desktop/github/portfolio/dajung-portfolio/imaging-processing/MainWindow/build/Qt_6_11_0_for_macOS-Debug",
+		"source" : "/Users/dajung/Desktop/github/portfolio/dajung-portfolio/imaging-processing/MainWindow"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}
