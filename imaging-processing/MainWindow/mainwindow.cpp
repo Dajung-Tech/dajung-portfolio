@@ -1,11 +1,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "ImageUtils.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPixmap>
 #include <QColor>
 #include <QDebug>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -414,4 +417,48 @@ QImage MainWindow::applyHistogramEqualization(const QImage& input){
     }
 
     return result.convertToFormat(QImage::Format_RGB32);
+}
+
+// registration
+QPointF MainWindow::registerByPhaseCorrelation(const QImage& refImg, const QImage& targetImg) {
+    cv::Mat ref = ImageUtils::qImageToMat(refImg);
+    cv::Mat target = ImageUtils::qImageToMat(targetImg);
+
+    if(ref.empty() || target.empty()) {
+        return QPointF(0.0, 0.0);
+    }
+
+    if(ref.size() != target.size()) {
+        cv::resize(target, target, ref.size());
+    }
+
+    cv::Mat refFloat, targetFloat;
+    ref.convertTo(refFloat, CV_32F);
+    target.convertTo(targetFloat, CV_32F);
+
+    cv::Point2d shift = cv::phaseCorrelate(refFloat, targetFloat);
+
+    return QPointF(shift.x, shift.y);
+}
+
+QImage MainWindow::shiftImageSubpixel(const QImage& input, double shiftX, double shiftY){
+    cv::Mat src = ImageUtils::qImageToMat(input);
+    if(src.empty()){
+        return QImage();
+    }
+
+    cv::Mat dst;
+    cv::Mat transform = (cv::Mat_<double>(2,3) << 1,0, shiftx, 0,1,shiftY);
+
+    cv::warpAffine(
+        src,
+        dst,
+        transform,
+        src.size(),
+        cv::INTER_LINEAR,
+        cv::BORDER_CONSTANT,
+        cv::Scalar(0)
+    );
+
+    return ImageUtils::matToQImage(dst).convertToFormat(QImage::Format_RGB32);
 }

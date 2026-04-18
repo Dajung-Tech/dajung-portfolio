@@ -5,6 +5,7 @@
 #include <QImage>
 #include <algorithm>
 #include <vector>
+#include <QPointF>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -32,6 +33,9 @@ private slots:
     void onMedianFilterClicked();
     void onHistEqClicked();
 
+    // registration
+    void onRegisterClicked();
+
 private:
     void updateImageViews();
 
@@ -43,11 +47,19 @@ private:
     QImage applyHistogramEqualization(const QImage& input);
     int clamp(int value, int minValue, int maxValue);
 
+    // registration
+    QPointF registerByPhaseCorrelation(const QImage& refImg, const QImage& targetImg);
+    QImage shiftImageSubpixel(const QImage& input, double shiftX, double shiftY);
+    QImage createOverlayImage(const QImage& ref, const QImage& aligned);
+
 private:
     Ui::MainWindow *ui;
 
     QImage originalImage_;
     QImage resultImage_;
+
+    double registeredShiftX_ = 0.0;
+    double registeredShiftY_ = 0.0;
 
 };
 #endif // MAINWINDOW_H
