@@ -4,16 +4,26 @@ import com.placeflow.demo.domain.CustomerOrder;
 import com.placeflow.demo.dto.CreateOrderRequest;
 import com.placeflow.demo.dto.OrderResponse;
 import com.placeflow.demo.repository.CustomerOrderRepository;
+import com.placeflow.demo.exception.DuplicateRequestException;
+
 import org.springframework.stereotype.Service;
 
 @Service
 public class OrderService {
     private final CustomerOrderRepository repository;
-    public OrderService(CustomerOrderRepository repository) {
+    private final IdempotencyService idempotencyService;
+
+    public OrderService(CustomerOrderRepository repository, IdempotencyService idempotencyService) {
         this.repository = repository;
+        this.idempotencyService = idempotencyService;
     }
 
     public OrderResponse create(CreateOrderRequest request) {
+        boolean acquired = idempotencyService.tryAcquire(request.getRequestId());
+        if(!acquired) {
+            throw new DuplicateRequestException("중복 요청입니다.");
+        }
+        
         CustomerOrder order = new CustomerOrder();
         order.setMerchantId(request.getMerchantId());
         order.setStatus("CREATED");
