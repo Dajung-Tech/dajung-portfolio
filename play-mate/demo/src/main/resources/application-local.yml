@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     url: jdbc:mysql://localhost:4306/playmate
-    username: playmate
-    password: playmate
-    driver-class-name: com.mysql.cj.jdbc.driver
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
