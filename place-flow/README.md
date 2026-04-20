@@ -91,7 +91,7 @@ podman run -d --name placeflow-mysql -e MYSQL_ROOT_PASSWORD=1234 -e MYSQL_DATABA
 
 ## 2. Redis 실행 (Podman)
 ```
-podman run -d -name placeflow-redis -p 6379:6379 docker.io/library/redis:7
+podman run -d --name placeflow-redis -p 6379:6379 docker.io/library/redis:7
 ```
 
 ## 3. 서버 실행
