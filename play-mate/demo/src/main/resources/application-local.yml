@@ -7,7 +7,6 @@ spring:
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,7 +14,16 @@ spring:
       hibernate:
         format_sql: true
     show-sql: true
-    
+
+springdoc:
+  api-docs:
+    path: /docs
+  swagger-ui:
+    path: /swagger.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+
 logging:
   level:
     org.hibernate.SQL: debug
