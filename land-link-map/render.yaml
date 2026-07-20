@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: land-link-map
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: FAMILY_ACCESS_KEY
+        sync: false
+      - key: LIVE_SYNC_MINUTES
+        value: 30

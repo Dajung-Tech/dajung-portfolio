@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#173d32" />
+    <title>토지잇기 · 개인용 매물 지도</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M16 3 28 9.5v13L16 29 4 22.5v-13L16 3Z"/><path d="m9 18 4-5 3 3 7-8"/></svg>
+          </div>
+          <div><strong>토지잇기</strong><span>개인용 매물 지도</span></div>
+        </div>
+        <div class="header-actions">
+          <span class="privacy-pill"><i></i> 공공 매물 실시간 연동</span>
+          <button class="icon-button" id="settingsButton" title="설정" aria-label="설정">
+            <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.1a1.7 1.7 0 0 0-1.1-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.1 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2.3V9.6h.1A1.7 1.7 0 0 0 4 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.4 4.1a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V2.3h4v.1A1.7 1.7 0 0 0 15 4a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.4a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1v4h-.1A1.7 1.7 0 0 0 19.4 15Z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <aside class="sidebar">
+        <div class="sidebar-scroll">
+          <section class="search-section">
+            <label class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+              <input id="searchInput" type="search" placeholder="제목, 주소, 메모 검색" autocomplete="off" />
+            </label>
+          </section>
+
+          <section class="filter-section">
+            <div class="section-title"><span>표시할 매물</span><button class="text-button" id="resetFilters">초기화</button></div>
+            <div class="source-filters" id="sourceFilters">
+              <button class="filter-chip active" data-source="farmland"><i class="dot farmland"></i>농지은행 <b id="farmlandCount">0</b></button>
+              <button class="filter-chip active" data-source="vacant"><i class="dot vacant"></i>농촌빈집 <b id="vacantCount">0</b></button>
+              <button class="filter-chip active" data-source="personal"><i class="dot personal"></i>직접 등록 <b id="personalCount">0</b></button>
+            </div>
+            <button class="favorite-filter" id="favoritesOnly" type="button"><span>☆</span> 즐겨찾기만 보기 <b id="favoriteCount">0</b></button>
+            <div class="segmented" id="dealFilters">
+              <button class="active" data-deal="all">전체</button>
+              <button data-deal="sale">매매</button>
+              <button data-deal="lease">임대</button>
+            </div>
+          </section>
+
+          <section class="region-section">
+            <div class="section-title"><span>통합 매물 조회 지역</span><small>최근 선택 자동 저장</small></div>
+            <div class="region-selects">
+              <select id="sidoSelect" aria-label="시·도" disabled><option value="">시·도</option></select>
+              <select id="sigunguSelect" aria-label="시·군·구" disabled><option value="">시·군·구 전체</option></select>
+              <select id="eupmyeondongSelect" aria-label="읍·면·동" disabled><option value="">읍·면·동 전체</option></select>
+            </div>
+            <p id="regionStatus" class="region-status">지역 목록을 준비하는 중…</p>
+          </section>
+
+          <section class="summary-section">
+            <div class="section-title"><span>현재 조건</span><small id="visibleCount">0건</small></div>
+            <div class="summary-grid">
+              <div><span>평균 면적</span><strong id="averageArea">—</strong></div>
+              <div><span>평균 매매가</span><strong id="averagePrice">—</strong></div>
+            </div>
+          </section>
+
+          <section class="listing-section">
+            <div class="section-title"><span>매물 목록</span><select id="sortSelect" aria-label="정렬"><option value="recent">최근 확인순</option><option value="priceAsc">가격 낮은순</option><option value="areaDesc">면적 넓은순</option><option value="distance">선택 매물 거리순</option></select></div>
+            <div id="listingList" class="listing-list"></div>
+            <div id="emptyState" class="empty-state hidden">
+              <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15M15 6v15"/></svg></div>
+              <strong id="emptyTitle">아직 등록된 매물이 없습니다</strong>
+              <p id="emptyDescription">지도에서 위치를 클릭한 뒤 매물을 추가하거나 CSV를 가져오세요.</p>
+              <button class="secondary-button" id="loadSampleButton">예제 데이터 보기</button>
+            </div>
+          </section>
+        </div>
+        <div class="sidebar-footer">
+          <div class="live-sync-panel">
+            <button class="secondary-button" id="syncButton"><span class="sync-icon">↻</span> 공공 매물 새로고침</button>
+            <small id="syncStatus">연결 상태 확인 전</small>
+            <small id="sharedStatus">공용 데이터 확인 중…</small>
+          </div>
+          <button class="primary-button" id="addButton"><span>＋</span> 매물 추가</button>
+          <div class="split-actions">
+            <button class="secondary-button" id="importButton">CSV 가져오기</button>
+            <button class="secondary-button" id="exportButton">CSV 내보내기</button>
+          </div>
+          <input type="file" id="fileInput" accept=".csv,text/csv" hidden />
+        </div>
+      </aside>
+
+      <main class="map-area">
+        <div id="map" role="application" aria-label="매물 지도"></div>
+        <div class="map-toolbar">
+          <button id="fitButton" title="전체 매물 보기"><svg viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg></button>
+          <button id="locationButton" title="내 위치"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></button>
+          <button id="externalMapsButton" title="선택 지역을 외부 부동산 사이트에서 보기"><svg viewBox="0 0 24 24"><path d="M14 3h7v7M21 3l-9 9"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></button>
+        </div>
+        <div class="map-hint" id="mapHint"><span>팁</span> 지도를 클릭하면 그 위치로 새 매물을 등록할 수 있어요.</div>
+        <div class="map-legend"><span><i class="dot farmland"></i>농지은행</span><span><i class="dot vacant"></i>농촌빈집</span><span><i class="dot personal"></i>직접 등록</span></div>
+      </main>
+
+      <aside class="detail-panel" id="detailPanel" aria-live="polite">
+        <button class="panel-close" id="detailClose" aria-label="상세 닫기">×</button>
+        <div id="detailContent"></div>
+      </aside>
+    </div>
+
+    <dialog id="propertyDialog" class="modal">
+      <form method="dialog" id="propertyForm">
+        <div class="modal-header"><div><span class="eyebrow">PROPERTY</span><h2 id="propertyDialogTitle">매물 추가</h2></div><button type="button" class="modal-close" data-close="propertyDialog">×</button></div>
+        <div class="modal-body form-grid">
+          <input type="hidden" name="id" />
+          <label class="field full"><span>매물명 *</span><input name="title" required maxlength="80" placeholder="예: 서산시 운산면 계획관리 토지" /></label>
+          <label class="field"><span>출처 *</span><select name="source" required><option value="personal">직접 등록</option></select></label>
+          <label class="field"><span>매물 종류 *</span><select name="propertyType" required><option value="land">토지</option><option value="house">주택</option><option value="farmland">농지</option></select></label>
+          <label class="field"><span>거래 방식 *</span><select name="dealType" required><option value="sale">매매</option><option value="lease">임대</option></select></label>
+          <label class="field"><span>가격/연 임대료(만원)</span><input name="price" type="number" min="0" step="1" placeholder="8500" /></label>
+          <label class="field"><span>면적(㎡)</span><input name="area" type="number" min="0" step="0.01" placeholder="1320" /></label>
+          <label class="field"><span>지목</span><input name="landCategory" maxlength="20" placeholder="전, 답, 대 등" /></label>
+          <label class="field full"><span>주소 *</span><input name="address" required maxlength="120" placeholder="충청남도 서산시 운산면 ..." /></label>
+          <label class="field"><span>위도 *</span><input name="lat" type="number" required min="30" max="44" step="any" placeholder="36.780000" /></label>
+          <label class="field"><span>경도 *</span><input name="lng" type="number" required min="123" max="132" step="any" placeholder="126.450000" /></label>
+          <label class="field full"><span>원문 URL</span><input name="url" type="url" placeholder="https://..." /></label>
+          <label class="field full"><span>기본 메모</span><textarea name="memo" rows="3" maxlength="500" placeholder="직접 등록 매물의 기본 설명을 기록하세요."></textarea></label>
+          <label class="field"><span>정보 확인일</span><input name="verifiedAt" type="date" /></label>
+        </div>
+        <div class="modal-footer"><button type="button" class="secondary-button" data-close="propertyDialog">취소</button><button type="submit" class="primary-button">저장하기</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="settingsDialog" class="modal compact">
+      <form method="dialog" id="settingsForm">
+        <div class="modal-header"><div><span class="eyebrow">SETTINGS</span><h2>지도 설정</h2></div><button type="button" class="modal-close" data-close="settingsDialog">×</button></div>
+        <div class="modal-body">
+          <label class="field"><span>지도 제공자</span><select name="mapProvider"><option value="osm">OpenStreetMap · 키 없이 사용</option><option value="naver">네이버 지도 · Client ID 필요</option></select></label>
+          <label class="field" id="naverKeyField"><span>네이버 지도 Client ID</span><input name="naverClientId" autocomplete="off" placeholder="Naver Cloud ncpKeyId" /><small>네이버 클라우드 Maps 애플리케이션에 <b>http://localhost:4173</b>을 Web 서비스 URL로 등록해야 합니다.</small></label>
+          <label class="toggle-row"><input type="checkbox" name="cadastral" /><span><b>지적편집도 표시</b><small>네이버 지도 선택 시 사용할 수 있습니다.</small></span></label>
+          <div class="data-notice"><strong>데이터 처리</strong><p>공용 DB가 연결되면 직접 등록 매물·가족 메모·즐겨찾기는 가족 모두에게 공유됩니다. 지도와 조회 지역 설정은 각 브라우저에 저장됩니다.</p></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="secondary-button" data-close="settingsDialog">취소</button><button type="submit" class="primary-button">적용하기</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="confirmDialog" class="modal confirm-modal">
+      <div class="modal-body"><div class="warning-icon">!</div><h2>매물을 삭제할까요?</h2><p>삭제한 매물은 복구할 수 없습니다.</p></div>
+      <div class="modal-footer"><button class="secondary-button" id="cancelDelete">취소</button><button class="danger-button" id="confirmDelete">삭제</button></div>
+    </dialog>
+
+    <dialog id="externalMapsDialog" class="modal compact external-maps-modal">
+      <div class="modal-header"><div><span class="eyebrow">EXTERNAL SITES</span><h2>선택 지역에서 매물 보기</h2></div><button type="button" class="modal-close" data-close="externalMapsDialog">×</button></div>
+      <div class="modal-body">
+        <div class="external-location-card">
+          <span>토지잇기에서 검색한 지역</span>
+          <strong id="externalLocationLabel">선택 지역을 확인하는 중…</strong>
+          <small id="externalLocationCoordinates">—</small>
+        </div>
+        <p class="external-help">지역 연결을 지원하는 업체는 토지잇기에서 선택한 지역이 적용된 공식 매물 화면으로 바로 이동합니다.</p>
+        <div class="external-provider-grid">
+          <button type="button" class="external-provider disco" data-provider="disco"><i class="dot disco"></i><span><b>디스코</b><small>지역 연결 확인 중</small></span><em>확인 중…</em></button>
+          <button type="button" class="external-provider hanbang" data-provider="hanbang"><i class="dot hanbang"></i><span><b>한방</b><small>지역 연결 확인 중</small></span><em>확인 중…</em></button>
+          <button type="button" class="external-provider ddangya" data-provider="ddangya"><i class="dot ddangya"></i><span><b>땅야</b><small>지역 연결 확인 중</small></span><em>확인 중…</em></button>
+          <button type="button" class="external-provider valuemap" data-provider="valuemap"><i class="dot valuemap"></i><span><b>밸류맵</b><small>지역 연결 확인 중</small></span><em>확인 중…</em></button>
+        </div>
+        <p class="external-attribution">각 사이트가 공식적으로 제공하는 지역 URL만 사용합니다.</p>
+      </div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

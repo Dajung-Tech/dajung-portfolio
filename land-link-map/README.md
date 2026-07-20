@@ -1,0 +1,123 @@
+# 토지잇기
+
+가족이 농지·농촌주택 매물을 한 화면에서 비교하고, 직접 매물·메모·즐겨찾기를 함께 관리하는 지도입니다.
+
+## 주요 기능
+
+- 농지은행 공식 GIS 및 그린대로 농촌빈집은행 공개 목록 조회
+- 직접 등록 매물 가족 공용 저장
+- 모든 매물에 가족 공용 메모와 즐겨찾기 저장
+- 즐겨찾기만 모아보기
+- 30초 간격 공용 데이터 갱신
+- 선택 지역을 한방·땅야 공식 결과 화면으로 연결
+- 로그인 화면 대신 비밀 가족 링크 사용
+
+농촌빈집은행은 공식 목록이 좌표를 제공하지 않고 주소 숫자를 가려서 표시합니다. 토지잇기도 같은 공개 범위를 지켜 목록에는 표시하지만 임의 지도 마커는 만들지 않습니다.
+
+## 로컬 실행
+
+`start.cmd`를 더블 클릭하거나 PowerShell에서 실행합니다.
+
+```powershell
+npm start
+```
+
+브라우저에서 `http://localhost:4173`을 엽니다. 공용 DB 환경변수가 없으면 직접 매물·메모·즐겨찾기는 현재 브라우저에만 저장됩니다.
+
+## Supabase 공용 데이터베이스 준비
+
+1. Supabase에서 무료 프로젝트를 생성합니다.
+2. `SQL Editor`를 열고 [`supabase-schema.sql`](./supabase-schema.sql)의 전체 내용을 실행합니다.
+3. 프로젝트의 `Connect` 또는 `Settings > API Keys`에서 다음 값을 확인합니다.
+   - Project URL
+   - 서버용 Secret key (`sb_secret_...` 권장)
+4. Secret key는 브라우저 코드, GitHub, 가족 공유 링크에 절대 넣지 않습니다.
+
+로컬 연결 테스트는 새 PowerShell 창에서 실행합니다.
+
+```powershell
+$env:SUPABASE_URL="https://프로젝트-ID.supabase.co"
+$env:SUPABASE_SECRET_KEY="sb_secret_서버용-비밀키"
+$env:FAMILY_ACCESS_KEY="충분히-길고-추측하기-어려운-가족키"
+npm start
+```
+
+안전한 가족키는 다음 명령으로 만들 수 있습니다.
+
+```powershell
+node -e "import('node:crypto').then(({randomBytes})=>console.log(randomBytes(24).toString('base64url')))"
+```
+
+가족키를 설정한 로컬 서버는 `http://localhost:4173/?access=가족키`로 처음 접속합니다. 서버가 HttpOnly 쿠키를 저장하고 주소창에서 키를 제거하므로 이후에는 로그인 없이 사용할 수 있습니다.
+
+## Render 무료 배포
+
+프로젝트에는 [`render.yaml`](./render.yaml)이 포함되어 있습니다.
+
+1. 이 폴더를 GitHub 비공개 저장소에 올립니다.
+2. Render에서 `New > Blueprint`를 선택하고 저장소를 연결합니다.
+3. 배포 과정에서 다음 Secret 환경변수를 입력합니다.
+   - `SUPABASE_URL`: Supabase Project URL
+   - `SUPABASE_SECRET_KEY`: Supabase 서버용 Secret key
+   - `FAMILY_ACCESS_KEY`: 위에서 생성한 가족키
+4. 배포 완료 후 `https://서비스이름.onrender.com/?access=가족키`를 가족에게 한 번 전달합니다.
+5. 가족 브라우저에 쿠키가 저장된 뒤에는 `?access=...` 없는 일반 주소로 접속할 수 있습니다.
+
+Render 헬스 체크는 인증 없이 `/health`만 사용하며, 다른 화면과 API는 가족키 쿠키로 보호됩니다. Render 무료 웹 서비스는 장시간 사용하지 않으면 휴면 상태가 되어 첫 접속이 늦을 수 있습니다. Supabase 무료 프로젝트도 장기간 활동이 없으면 일시 정지될 수 있습니다.
+
+## 데이터 공유 범위
+
+| 데이터 | 저장 위치 | 가족 공유 |
+| --- | --- | --- |
+| 직접 등록 매물 | Supabase | 공유됨 |
+| 가족 메모 | Supabase | 공유됨 |
+| 즐겨찾기 | Supabase | 공유됨 |
+| 지도 종류·조회 지역 | 각 브라우저 | 공유되지 않음 |
+| 농지은행·빈집 조회 캐시 | Render 서버 메모리 | 서버 재시작 시 다시 조회 |
+
+공용 DB를 처음 연결한 브라우저는 기존 로컬 직접 매물·메모·즐겨찾기를 한 번 자동으로 공용 DB에 옮깁니다.
+
+## 사용법
+
+1. 왼쪽에서 시·도, 시·군·구, 읍·면·동을 선택합니다.
+2. `공공 매물 새로고침`을 누릅니다.
+3. 목록의 별 버튼으로 가족 즐겨찾기를 지정합니다.
+4. 매물 상세 화면에서 가족 공용 메모를 저장합니다.
+5. `즐겨찾기만 보기`로 관심 매물을 모아봅니다.
+
+## 선택 지역을 민간 서비스에서 보기
+
+지도 오른쪽 위의 외부 링크 아이콘은 왼쪽 지역 선택기의 법정동 코드와 지역명을 사용합니다.
+
+- 한방: 공식 검색 폼에 시·도/시·군·구/읍·면·동 코드를 제출합니다.
+- 땅야: 법정동 코드를 포함한 공식 지역 매물 목록을 엽니다.
+- 디스코·밸류맵: 공식 지역 딥링크가 없어 자동 적용 버튼이 비활성화됩니다.
+
+민간 서비스의 매물 데이터를 수집하지 않고 공식 지역 링크만 엽니다.
+
+## 기타 환경 변수
+
+```powershell
+$env:FARMLAND_LEGAL_CODE="43"
+$env:FARMLAND_REGION_NAME="충청북도"
+$env:LIVE_SYNC_MINUTES="30"
+$env:FARMLAND_SYNC_ENABLED="true"
+$env:VACANT_HOUSE_SYNC_ENABLED="true"
+```
+
+## CSV
+
+`data/sample-properties.csv`를 참고하세요.
+
+- `source`: `farmland`, `vacant`, `personal`
+- `propertyType`: `land`, `house`, `farmland`
+- `dealType`: `sale`, `lease`
+- `price`: 만원 단위
+- `area`: 제곱미터(㎡) 단위
+
+## 주의
+
+- 가족 공유 링크를 가진 사람은 공용 매물·메모·즐겨찾기를 수정할 수 있습니다.
+- 가족키가 유출되면 Render의 `FAMILY_ACCESS_KEY` 값을 변경하세요.
+- Supabase Secret key는 반드시 Render 환경변수에만 저장하세요.
+- 공공 사이트 연결은 저빈도 가족 조회를 전제로 하며 제공처 응답 형식 변경 시 수정이 필요할 수 있습니다.

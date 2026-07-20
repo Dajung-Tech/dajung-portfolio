@@ -1,0 +1,12 @@
+{
+  "name": "land-link-map",
+  "version": "1.0.0",
+  "private": true,
+  "description": "개인용 토지·주택·농지은행 매물 통합 지도",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node --check app.js && node --check server.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

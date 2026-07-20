@@ -1,0 +1,5 @@
+id,source,propertyType,dealType,title,address,lat,lng,price,area,landCategory,url,memo,verifiedAt
+sample-1,personal,land,sale,서산 운산면 계획관리 토지,충청남도 서산시 운산면,36.8115,126.5806,8500,1322,전,,예제 데이터입니다. 실제 매물로 교체하세요.,2026-07-20
+sample-2,farmland,farmland,lease,운산면 농지은행 임대농지,충청남도 서산시 운산면,36.8252,126.5921,180,2480,답,https://www.fbo.or.kr/,예제 데이터입니다. 연 임대료 기준입니다.,2026-07-20
+sample-3,personal,house,sale,운산면 단독주택,충청남도 서산시 운산면,36.8041,126.5742,16500,121,대,,예제 데이터입니다. 실제 매물로 교체하세요.,2026-07-20
+sample-4,personal,farmland,sale,현장 확인 농지,충청남도 서산시 운산면,36.8174,126.5667,7200,1650,전,,남향 완경사. 진입로 현장 재확인 필요.,2026-07-20
