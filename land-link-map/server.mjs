@@ -11,6 +11,7 @@ const FBO_GIS_URL = "https://www.fbo.or.kr/gis/selectReqFlndList.do";
 const FBO_REGION_URL = "https://www.fbo.or.kr/gis/SelectLegalCode.do";
 const GREENDAERO_PAGE_URL = "https://www.greendaero.go.kr/svc/rfph/cpif/front/vacantlist.do";
 const GREENDAERO_LIST_URL = "https://www.greendaero.go.kr/svc/rfph/cpif/getVacantHomePagingList.do";
+const GREENDAERO_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 const HANBANG_REGION_URL = "http://www.karhanbang.com/office/ajax_combo_search.asp";
 const HANBANG_SALE_URL = "https://www.karhanbang.com/sale/";
 const syncMinutes = Math.max(15, Number(process.env.LIVE_SYNC_MINUTES) || 30);
@@ -247,6 +248,77 @@ function greenDealType(code) {
   return code === "01" ? "sale" : "lease";
 }
 
+function setCookieHeaders(response) {
+  if (typeof response.headers.getSetCookie === "function") return response.headers.getSetCookie();
+  const combined = response.headers.get("set-cookie") || "";
+  return combined ? combined.split(/,(?=\s*[!#$%&'*+.^_`|~0-9A-Za-z-]+=)/) : [];
+}
+
+function cookieHeader(response) {
+  return setCookieHeaders(response)
+    .map((value) => value.split(";", 1)[0]?.trim())
+    .filter(Boolean)
+    .join("; ");
+}
+
+function greendaeroCsrfToken(html) {
+  return html.match(/<meta[^>]+name=["']_csrf["'][^>]+content=["']([^"']+)["']/i)?.[1]
+    || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']_csrf["']/i)?.[1]
+    || html.match(/_G_CSRF_TOKEN\s*=\s*["']([^"']+)["']/)?.[1]
+    || "";
+}
+
+async function createGreendaeroSession() {
+  const response = await fetchWithTimeout(GREENDAERO_PAGE_URL, {
+    headers: {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Cache-Control": "no-cache",
+      "User-Agent": GREENDAERO_USER_AGENT
+    }
+  }, 20_000);
+  if (!response.ok) throw new Error(`농촌빈집은행 세션 응답 오류 (${response.status})`);
+  const html = await response.text();
+  const csrfToken = greendaeroCsrfToken(html);
+  const cookies = cookieHeader(response);
+  if (!csrfToken || !cookies) throw new Error("농촌빈집은행 세션 정보를 확인하지 못했습니다.");
+  return { csrfToken, cookies };
+}
+
+function responsePreview(value) {
+  return String(value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+}
+
+async function requestVacantHousePayload(params) {
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const session = await createGreendaeroSession();
+      const response = await fetchWithTimeout(`${GREENDAERO_LIST_URL}?${params}`, {
+        headers: {
+          Accept: "application/json, text/javascript, */*; q=0.01",
+          Cookie: session.cookies,
+          Referer: GREENDAERO_PAGE_URL,
+          "User-Agent": GREENDAERO_USER_AGENT,
+          "X-Requested-With": "XMLHttpRequest",
+          "X-XSRF-TOKEN": session.csrfToken
+        }
+      }, 20_000);
+      const text = await response.text();
+      if (!response.ok) throw new Error(`농촌빈집은행 응답 오류 (${response.status})${responsePreview(text) ? ` · ${responsePreview(text)}` : ""}`);
+      try {
+        const payload = JSON.parse(text);
+        if (!Array.isArray(payload.list)) throw new Error("목록 필드가 없습니다.");
+        return payload;
+      } catch (error) {
+        throw new Error(`농촌빈집은행이 JSON 대신 다른 응답을 반환했습니다.${responsePreview(text) ? ` · ${responsePreview(text)}` : ""}`);
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
 function normalizeVacantHouse(item) {
   const address = maskedAddress(item.iemCn1?.split(":").slice(1).join(":") || `${item.ctpvNm || ""} ${item.sggNm || ""}`);
   const features = String(item.iemCn5 || "").replace(/^\s*매물특징\s*:\s*/, "").trim();
@@ -266,11 +338,7 @@ async function fetchVacantHouseListings(legalCode, regionName) {
   const ctpvCd = GREENDAERO_SIDO_CODES[legalCode.slice(0, 2)];
   if (!ctpvCd) return { listings: [], status: "unsupported", message: "해당 시도는 농촌빈집은행 조회 대상이 아닙니다." };
   const params = new URLSearchParams({ page: "1", itemsPerPage: "500", ctpvCd, sggCd: "", estateDlingTypeCd: "", completedYn: "N", searchText: "" });
-  const response = await fetchWithTimeout(`${GREENDAERO_LIST_URL}?${params}`, {
-    headers: { Referer: GREENDAERO_PAGE_URL, Accept: "application/json", "X-Requested-With": "XMLHttpRequest", "User-Agent": "land-link-map/1.3 (low-frequency personal sync)" }
-  }, 20_000);
-  if (!response.ok) throw new Error(`농촌빈집은행 응답 오류 (${response.status})`);
-  const payload = await response.json();
+  const payload = await requestVacantHousePayload(params);
   const listings = (Array.isArray(payload.list) ? payload.list : []).filter((item) => regionMatches(item, regionName)).map(normalizeVacantHouse);
   return { listings, status: "connected", message: `${regionName} ${listings.length}건 · 좌표 미제공` };
 }
