@@ -254,11 +254,16 @@ function setCookieHeaders(response) {
   return combined ? combined.split(/,(?=\s*[!#$%&'*+.^_`|~0-9A-Za-z-]+=)/) : [];
 }
 
-function cookieHeader(response) {
-  return setCookieHeaders(response)
-    .map((value) => value.split(";", 1)[0]?.trim())
-    .filter(Boolean)
-    .join("; ");
+function collectResponseCookies(jar, response) {
+  for (const value of setCookieHeaders(response)) {
+    const pair = value.split(";", 1)[0]?.trim() || "";
+    const index = pair.indexOf("=");
+    if (index > 0) jar.set(pair.slice(0, index), pair.slice(index + 1));
+  }
+}
+
+function cookieJarHeader(jar) {
+  return [...jar.entries()].map(([name, value]) => `${name}=${value}`).join("; ");
 }
 
 function greendaeroCsrfToken(html) {
@@ -269,19 +274,39 @@ function greendaeroCsrfToken(html) {
 }
 
 async function createGreendaeroSession() {
-  const response = await fetchWithTimeout(GREENDAERO_PAGE_URL, {
-    headers: {
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Cache-Control": "no-cache",
-      "User-Agent": GREENDAERO_USER_AGENT
+  const jar = new Map();
+  let currentUrl = GREENDAERO_PAGE_URL;
+  let response;
+  for (let redirect = 0; redirect < 5; redirect += 1) {
+    const cookies = cookieJarHeader(jar);
+    response = await fetchWithTimeout(currentUrl, {
+      redirect: "manual",
+      headers: {
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Cache-Control": "no-cache",
+        "User-Agent": GREENDAERO_USER_AGENT,
+        ...(cookies ? { Cookie: cookies } : {})
+      }
+    }, 20_000);
+    collectResponseCookies(jar, response);
+    const location = response.headers.get("location");
+    if (response.status >= 300 && response.status < 400 && location) {
+      currentUrl = new URL(location, currentUrl).toString();
+      continue;
     }
-  }, 20_000);
-  if (!response.ok) throw new Error(`농촌빈집은행 세션 응답 오류 (${response.status})`);
+    break;
+  }
+  if (!response || !response.ok) throw new Error(`농촌빈집은행 세션 응답 오류 (${response?.status || "연결 실패"})`);
   const html = await response.text();
-  const csrfToken = greendaeroCsrfToken(html);
-  const cookies = cookieHeader(response);
-  if (!csrfToken || !cookies) throw new Error("농촌빈집은행 세션 정보를 확인하지 못했습니다.");
-  return { csrfToken, cookies };
+  const cookieToken = jar.get("XSRF-TOKEN") || "";
+  let csrfToken = greendaeroCsrfToken(html) || cookieToken;
+  try { csrfToken = decodeURIComponent(csrfToken); } catch { /* 원문 토큰 사용 */ }
+  return {
+    csrfToken,
+    cookies: cookieJarHeader(jar),
+    diagnostics: `페이지 ${response.status} · CSRF ${csrfToken ? "확인" : "없음"} · 쿠키 ${jar.size}개${responsePreview(html) ? ` · ${responsePreview(html)}` : ""}`
+  };
 }
 
 function responsePreview(value) {
@@ -296,11 +321,12 @@ async function requestVacantHousePayload(params) {
       const response = await fetchWithTimeout(`${GREENDAERO_LIST_URL}?${params}`, {
         headers: {
           Accept: "application/json, text/javascript, */*; q=0.01",
-          Cookie: session.cookies,
+          "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
           Referer: GREENDAERO_PAGE_URL,
           "User-Agent": GREENDAERO_USER_AGENT,
           "X-Requested-With": "XMLHttpRequest",
-          "X-XSRF-TOKEN": session.csrfToken
+          ...(session.cookies ? { Cookie: session.cookies } : {}),
+          ...(session.csrfToken ? { "X-XSRF-TOKEN": session.csrfToken } : {})
         }
       }, 20_000);
       const text = await response.text();
@@ -310,7 +336,7 @@ async function requestVacantHousePayload(params) {
         if (!Array.isArray(payload.list)) throw new Error("목록 필드가 없습니다.");
         return payload;
       } catch (error) {
-        throw new Error(`농촌빈집은행이 JSON 대신 다른 응답을 반환했습니다.${responsePreview(text) ? ` · ${responsePreview(text)}` : ""}`);
+        throw new Error(`농촌빈집은행이 JSON 대신 다른 응답을 반환했습니다.${responsePreview(text) ? ` · ${responsePreview(text)}` : ""} · ${session.diagnostics}`);
       }
     } catch (error) {
       lastError = error;
