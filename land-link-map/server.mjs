@@ -32,6 +32,8 @@ const sharedConfig = {
 const liveCaches = new Map();
 const regionCache = new Map();
 const externalLinkCache = new Map();
+let vacantDiagnosticCache = null;
+let vacantDiagnosticRefreshing = null;
 const FALLBACK_SIDOS = [
   ["11", "서울특별시"], ["26", "부산광역시"], ["27", "대구광역시"], ["28", "인천광역시"],
   ["29", "광주광역시"], ["30", "대전광역시"], ["31", "울산광역시"], ["36", "세종특별자치시"],
@@ -51,6 +53,14 @@ const HANBANG_SIDO_CODES = {
   "11": "1", "41": "2", "28": "3", "26": "4", "27": "5", "29": "6", "46": "6",
   "30": "7", "31": "8", "51": "9", "48": "10", "47": "11", "52": "13", "44": "14",
   "43": "15", "36": "16", "50": "17"
+};
+
+const NAVER_SIDO_CENTERS = {
+  "11": [37.5665, 126.9780], "26": [35.1796, 129.0756], "27": [35.8714, 128.6014], "28": [37.4563, 126.7052],
+  "29": [35.1595, 126.8526], "30": [36.3504, 127.3845], "31": [35.5384, 129.3114], "36": [36.4800, 127.2890],
+  "41": [37.4138, 127.5183], "51": [37.8228, 128.1555], "43": [36.8000, 127.7000], "44": [36.5184, 126.8000],
+  "52": [35.7175, 127.1530], "46": [34.8679, 126.9910], "47": [36.4919, 128.8889], "48": [35.4606, 128.2132],
+  "50": [33.4996, 126.5312]
 };
 
 const mime = {
@@ -97,6 +107,7 @@ function authorizeFamilyRequest(request, response, url) {
     response.end();
     return false;
   }
+  if (secureEqual(request.headers["x-family-access-key"], sharedConfig.familyAccessKey)) return true;
   if (secureEqual(parseCookies(request).landlink_access, sharedConfig.familyAccessKey)) return true;
   if (url.pathname.startsWith("/api/")) {
     json(response, 403, { error: "가족 공유 링크를 통해 접속해 주세요." });
@@ -361,12 +372,51 @@ function normalizeVacantHouse(item) {
 
 async function fetchVacantHouseListings(legalCode, regionName) {
   if (!liveConfig.vacantHouseEnabled) return { listings: [], status: "disabled", message: "환경설정에서 비활성화됨" };
+  const cached = await getVacantCache();
+  if (cached) {
+    const listings = cached.listings.filter((listing) => cachedVacantRegionMatches(listing, regionName));
+    const synced = new Date(cached.syncedAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "short", timeStyle: "short" });
+    return { listings, status: "connected", message: `${regionName} ${listings.length}건 · PC 동기화 ${synced}` };
+  }
   const ctpvCd = GREENDAERO_SIDO_CODES[legalCode.slice(0, 2)];
   if (!ctpvCd) return { listings: [], status: "unsupported", message: "해당 시도는 농촌빈집은행 조회 대상이 아닙니다." };
   const params = new URLSearchParams({ page: "1", itemsPerPage: "500", ctpvCd, sggCd: "", estateDlingTypeCd: "", completedYn: "N", searchText: "" });
   const payload = await requestVacantHousePayload(params);
   const listings = (Array.isArray(payload.list) ? payload.list : []).filter((item) => regionMatches(item, regionName)).map(normalizeVacantHouse);
   return { listings, status: "connected", message: `${regionName} ${listings.length}건 · 좌표 미제공` };
+}
+
+function cachedVacantRegionMatches(listing, regionName) {
+  const parts = String(regionName || "").split(/\s+/).filter(Boolean);
+  const address = String(listing?.address || "");
+  return parts.every((part) => address.includes(part));
+}
+
+async function vacantDiagnostic() {
+  if (vacantDiagnosticCache && Date.now() - vacantDiagnosticCache.checkedAt < 5 * 60_000) return vacantDiagnosticCache;
+  if (vacantDiagnosticRefreshing) return vacantDiagnosticRefreshing;
+  vacantDiagnosticRefreshing = (async () => {
+    try {
+      const result = await fetchVacantHouseListings(liveConfig.defaultLegalCode, liveConfig.defaultRegionName);
+      vacantDiagnosticCache = {
+        ok: result.status === "connected",
+        status: result.status,
+        message: result.message,
+        count: result.listings.length,
+        checkedAt: Date.now()
+      };
+    } catch (error) {
+      vacantDiagnosticCache = {
+        ok: false,
+        status: "error",
+        message: error.message || "농촌빈집은행 연결 실패",
+        count: 0,
+        checkedAt: Date.now()
+      };
+    }
+    return vacantDiagnosticCache;
+  })().finally(() => { vacantDiagnosticRefreshing = null; });
+  return vacantDiagnosticRefreshing;
 }
 
 function connectors(legalCode, regionName) {
@@ -462,6 +512,72 @@ async function getSharedData() {
     favorite: Boolean(row.favorite), memo: cleanText(row.memo, 1000), updatedAt: String(row.updated_at || "")
   }]));
   return { configured: true, properties, listingStates };
+}
+
+function normalizeCachedVacantListing(raw) {
+  if (!raw || raw.source !== "vacant" || raw.managedBy !== "vacant-house-live") return null;
+  const id = String(raw.id || "");
+  const title = cleanText(raw.title, 120);
+  const address = cleanText(raw.address, 180);
+  if (!/^greendaero-\d+$/.test(id) || !title || !address) return null;
+  let propertyUrl = "";
+  try {
+    const parsed = new URL(String(raw.url || ""));
+    if (parsed.protocol === "https:" && parsed.hostname === "www.greendaero.go.kr") propertyUrl = parsed.href;
+  } catch {}
+  return {
+    id,
+    externalId: cleanText(raw.externalId, 80),
+    managedBy: "vacant-house-live",
+    source: "vacant",
+    propertyType: "house",
+    dealType: raw.dealType === "lease" ? "lease" : "sale",
+    title,
+    address,
+    lat: null,
+    lng: null,
+    price: Math.max(0, Number(raw.price) || 0),
+    area: Math.max(0, Number(raw.area) || 0),
+    landCategory: "농촌주택",
+    url: propertyUrl,
+    memo: cleanText(raw.memo, 2000),
+    verifiedAt: /^\d{4}-\d{2}-\d{2}$/.test(String(raw.verifiedAt || "")) ? String(raw.verifiedAt) : new Date().toISOString().slice(0, 10),
+    syncedAt: String(raw.syncedAt || ""),
+    readOnly: true
+  };
+}
+
+async function getVacantCache() {
+  if (!databaseConfigured()) return null;
+  try {
+    const rows = await supabaseRequest("family_external_caches?source=eq.vacant&select=payload,synced_at&limit=1");
+    const row = Array.isArray(rows) ? rows[0] : null;
+    const listings = (Array.isArray(row?.payload?.listings) ? row.payload.listings : []).map(normalizeCachedVacantListing).filter(Boolean);
+    return row && listings.length ? { listings, syncedAt: String(row.synced_at || "") } : null;
+  } catch (error) {
+    if (/family_external_caches|42P01/.test(error.message || "")) return null;
+    throw error;
+  }
+}
+
+async function saveVacantCache(items) {
+  if (!Array.isArray(items) || items.length > 1000) throw new Error("빈집 원본 목록 형식이 올바르지 않습니다.");
+  const listings = items.map(normalizeVacantHouse).map(normalizeCachedVacantListing).filter(Boolean);
+  if (!listings.length) throw new Error("저장할 유효한 빈집 매물이 없습니다.");
+  const syncedAt = new Date().toISOString();
+  await supabaseRequest("family_external_caches?on_conflict=source", {
+    method: "POST",
+    body: { source: "vacant", payload: { listings }, synced_at: syncedAt },
+    prefer: "resolution=merge-duplicates,return=minimal"
+  });
+  for (const cache of liveCaches.values()) {
+    delete cache.bySource.vacant;
+    delete cache.sources.vacant;
+    cache.listings = Object.values(cache.bySource).flat();
+    cache.updatedAt = null;
+  }
+  vacantDiagnosticCache = null;
+  return { count: listings.length, syncedAt };
 }
 
 async function upsertSharedProperty(id, raw) {
@@ -574,10 +690,40 @@ async function createHanbangLink(legalCode, regionName) {
   };
 }
 
+function naverRegionCenter(legalCode, regionName) {
+  const cached = liveCaches.get(`${legalCode}:${regionName}`);
+  const coordinates = (cached?.bySource?.farmland || [])
+    .filter((listing) => Number.isFinite(listing.lat) && Number.isFinite(listing.lng))
+    .map((listing) => [listing.lat, listing.lng]);
+  if (coordinates.length) {
+    const lats = coordinates.map(([lat]) => lat);
+    const lngs = coordinates.map(([, lng]) => lng);
+    return [(Math.min(...lats) + Math.max(...lats)) / 2, (Math.min(...lngs) + Math.max(...lngs)) / 2];
+  }
+  return NAVER_SIDO_CENTERS[legalCode.slice(0, 2)] || [36.5, 127.8];
+}
+
+function createNaverLink(legalCode, regionName) {
+  const [lat, lng] = naverRegionCenter(legalCode, regionName);
+  const zoom = legalCode.length === 2 ? 9 : legalCode.length === 5 ? 12 : 14;
+  const params = new URLSearchParams({
+    ms: `${lat.toFixed(6)},${lng.toFixed(6)},${zoom}`,
+    a: "DDDGG:VL",
+    b: "A1",
+    e: "RETAIL"
+  });
+  return {
+    supported: true,
+    method: "GET",
+    url: `https://new.land.naver.com/houses?${params}`,
+    message: `${regionName} 중심 · 주택 매매만 보기`
+  };
+}
+
 async function externalProviders(legalCode, regionName) {
   const key = `${legalCode}:${regionName}`;
   const cached = externalLinkCache.get(key);
-  if (cached && Date.now() - cached.savedAt < 24 * 60 * 60_000) return cached.providers;
+  if (cached && Date.now() - cached.savedAt < 24 * 60 * 60_000) return { ...cached.providers, naver: createNaverLink(legalCode, regionName) };
 
   let hanbang;
   try {
@@ -587,6 +733,7 @@ async function externalProviders(legalCode, regionName) {
   }
   const ddangyaCode = legalCode.replace(/^42/, "51").replace(/^45/, "52");
   const providers = {
+    naver: createNaverLink(legalCode, regionName),
     disco: { supported: false, url: "https://disco.re/", message: "공식 지역 딥링크를 제공하지 않습니다." },
     hanbang,
     ddangya: { supported: true, method: "GET", url: `https://ddangya.com/list?code=${encodeURIComponent(ddangyaCode)}`, message: `${regionName} 매물로 바로 이동` },
@@ -601,11 +748,21 @@ createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host}`);
     if (!authorizeFamilyRequest(request, response, url)) return;
     if (url.pathname === "/health" && request.method === "GET") {
+      if (url.searchParams.get("upstream") === "vacant") {
+        const diagnostic = await vacantDiagnostic();
+        json(response, diagnostic.ok ? 200 : 503, { ...diagnostic, checkedAt: new Date(diagnostic.checkedAt).toISOString() });
+        return;
+      }
       json(response, 200, { ok: true, database: databaseConfigured() });
       return;
     }
     if (url.pathname === "/api/shared-data" && request.method === "GET") {
       json(response, 200, await getSharedData());
+      return;
+    }
+    if (url.pathname === "/api/vacant-cache" && request.method === "PUT") {
+      const body = await readRequestJson(request, 2_000_000);
+      json(response, 200, { ok: true, ...(await saveVacantCache(body.items)) });
       return;
     }
     const sharedPropertyMatch = url.pathname.match(/^\/api\/shared-properties\/([^/]+)$/);

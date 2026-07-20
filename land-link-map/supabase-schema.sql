@@ -12,16 +12,29 @@ create table if not exists public.family_listing_states (
   constraint family_listing_states_memo_length check (char_length(memo) <= 1000)
 );
 
+create table if not exists public.family_external_caches (
+  source text primary key,
+  payload jsonb not null,
+  synced_at timestamptz not null default now(),
+  constraint family_external_caches_source check (source in ('vacant'))
+);
+
 create index if not exists family_properties_updated_at_idx
   on public.family_properties (updated_at desc);
 
 create index if not exists family_listing_states_updated_at_idx
   on public.family_listing_states (updated_at desc);
 
+create index if not exists family_external_caches_synced_at_idx
+  on public.family_external_caches (synced_at desc);
+
 alter table public.family_properties enable row level security;
 alter table public.family_listing_states enable row level security;
+alter table public.family_external_caches enable row level security;
 
 revoke all on table public.family_properties from anon, authenticated;
 revoke all on table public.family_listing_states from anon, authenticated;
+revoke all on table public.family_external_caches from anon, authenticated;
 grant all on table public.family_properties to service_role;
 grant all on table public.family_listing_states to service_role;
+grant all on table public.family_external_caches to service_role;

@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "check": "node --check app.js && node --check server.mjs"
+    "check": "node --check app.js && node --check server.mjs && node --check sync-vacant.mjs",
+    "sync:vacant": "node sync-vacant.mjs"
   },
   "engines": { "node": ">=18" }
 }
