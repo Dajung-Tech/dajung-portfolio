@@ -30,6 +30,7 @@ const sharedConfig = {
 };
 
 const liveCaches = new Map();
+const VACANT_CACHE_PROPERTY_ID = "__system-vacant-cache__";
 const regionCache = new Map();
 const externalLinkCache = new Map();
 let vacantDiagnosticCache = null;
@@ -373,7 +374,10 @@ function normalizeVacantHouse(item) {
 async function fetchVacantHouseListings(legalCode, regionName) {
   if (!liveConfig.vacantHouseEnabled) return { listings: [], status: "disabled", message: "환경설정에서 비활성화됨" };
   const cached = await getVacantCache();
-  if (cached) {
+  if (cached?.setupRequired) {
+    return { listings: [], status: "setup-required", message: "빈집 캐시가 비어 있습니다. 국내 PC에서 sync-vacant.cmd를 한 번 실행해 주세요." };
+  }
+  if (cached?.listings?.length) {
     const listings = cached.listings.filter((listing) => cachedVacantRegionMatches(listing, regionName));
     const synced = new Date(cached.syncedAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "short", timeStyle: "short" });
     return { listings, status: "connected", message: `${regionName} ${listings.length}건 · PC 동기화 ${synced}` };
@@ -553,11 +557,39 @@ async function getVacantCache() {
     const rows = await supabaseRequest("family_external_caches?source=eq.vacant&select=payload,synced_at&limit=1");
     const row = Array.isArray(rows) ? rows[0] : null;
     const listings = (Array.isArray(row?.payload?.listings) ? row.payload.listings : []).map(normalizeCachedVacantListing).filter(Boolean);
-    return row && listings.length ? { listings, syncedAt: String(row.synced_at || "") } : null;
+    if (row && listings.length) return { listings, syncedAt: String(row.synced_at || "") };
   } catch (error) {
-    if (/family_external_caches|42P01/.test(error.message || "")) return null;
-    throw error;
+    if (!/family_external_caches|42P01|PGRST205/.test(error.message || "")) throw error;
   }
+
+  const fallbackRows = await supabaseRequest(`family_properties?id=eq.${encodeURIComponent(VACANT_CACHE_PROPERTY_ID)}&select=payload,updated_at&limit=1`);
+  const fallbackRow = Array.isArray(fallbackRows) ? fallbackRows[0] : null;
+  const fallbackListings = (Array.isArray(fallbackRow?.payload?.listings) ? fallbackRow.payload.listings : [])
+    .map(normalizeCachedVacantListing)
+    .filter(Boolean);
+  if (fallbackRow && fallbackListings.length) {
+    return { listings: fallbackListings, syncedAt: String(fallbackRow.updated_at || "") };
+  }
+  return { listings: [], syncedAt: "", setupRequired: true };
+}
+
+async function persistVacantCache(listings, syncedAt) {
+  try {
+    await supabaseRequest("family_external_caches?on_conflict=source", {
+      method: "POST",
+      body: { source: "vacant", payload: { listings }, synced_at: syncedAt },
+      prefer: "resolution=merge-duplicates,return=minimal"
+    });
+    return;
+  } catch (error) {
+    if (!/family_external_caches|42P01|PGRST205/.test(error.message || "")) throw error;
+  }
+
+  await supabaseRequest("family_properties?on_conflict=id", {
+    method: "POST",
+    body: { id: VACANT_CACHE_PROPERTY_ID, payload: { kind: "vacant-cache", listings }, updated_at: syncedAt },
+    prefer: "resolution=merge-duplicates,return=minimal"
+  });
 }
 
 async function saveVacantCache(items) {
@@ -565,11 +597,7 @@ async function saveVacantCache(items) {
   const listings = items.map(normalizeVacantHouse).map(normalizeCachedVacantListing).filter(Boolean);
   if (!listings.length) throw new Error("저장할 유효한 빈집 매물이 없습니다.");
   const syncedAt = new Date().toISOString();
-  await supabaseRequest("family_external_caches?on_conflict=source", {
-    method: "POST",
-    body: { source: "vacant", payload: { listings }, synced_at: syncedAt },
-    prefer: "resolution=merge-duplicates,return=minimal"
-  });
+  await persistVacantCache(listings, syncedAt);
   for (const cache of liveCaches.values()) {
     delete cache.bySource.vacant;
     delete cache.sources.vacant;

@@ -69,7 +69,7 @@ Render 헬스 체크는 인증 없이 `/health`만 사용하며, 다른 화면�
 
 그린대로가 Render의 해외 서버 요청을 웹 방화벽으로 차단할 수 있어, 농촌빈집은 한국의 개인 PC에서 조회한 뒤 Supabase 캐시에 저장할 수 있습니다. Supabase Secret key는 PC에 저장하지 않고 배포 주소와 가족키만 사용합니다.
 
-1. Supabase `SQL Editor`에서 최신 [`supabase-schema.sql`](./supabase-schema.sql)을 다시 실행해 `family_external_caches` 테이블을 만듭니다.
+1. 권장: Supabase `SQL Editor`에서 최신 [`supabase-schema.sql`](./supabase-schema.sql)을 다시 실행해 전용 `family_external_caches` 테이블을 만듭니다. 생략하면 기존 가족 공용 매물 테이블을 호환 저장소로 자동 사용합니다.
 2. [`.env.vacant.local.example`](./.env.vacant.local.example)을 `.env.vacant.local`로 복사합니다.
 3. `.env.vacant.local`에 실제 값을 입력합니다.
 

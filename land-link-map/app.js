@@ -742,11 +742,13 @@ function syncSummary(payload) {
   const labels = { farmland: "농지", vacant: "빈집" };
   const updated = payload.updatedAt ? new Date(payload.updatedAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }) : "—";
   const connected = Object.entries(payload.sources || {}).filter(([, source]) => source.status === "connected").map(([key, source]) => `${labels[key] || key} ${source.count}건`);
-  const setupCount = Object.values(payload.sources || {}).filter((source) => source.status === "setup-required").length;
+  const setupRequired = Object.entries(payload.sources || {})
+    .filter(([, source]) => source.status === "setup-required")
+    .map(([key, source]) => `${labels[key] || key}: ${source.message}`);
   const errors = Object.entries(payload.sources || {})
     .filter(([, source]) => source.status === "error")
     .map(([key, source]) => `${labels[key] || key} 오류: ${source.message}`);
-  return [`${payload.region}`, ...connected, setupCount ? `제휴 피드 미설정 ${setupCount}` : "", ...errors, updated].filter(Boolean).join(" · ");
+  return [`${payload.region}`, ...connected, ...setupRequired, ...errors, updated].filter(Boolean).join(" · ");
 }
 
 function setRegionOptions(select, regions, placeholder, selectedCode = "") {
