@@ -4,6 +4,7 @@ services:
     runtime: node
     plan: free
     region: singapore
+    rootDir: land-link-map
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /health
