@@ -76,12 +76,37 @@ Render 헬스 체크는 인증 없이 `/health`만 사용하며, 다른 화면�
 ```dotenv
 LANDLINK_URL=https://서비스이름.onrender.com
 FAMILY_ACCESS_KEY=Render에 설정한 가족키
+KAKAO_REST_API_KEY=Kakao-Developers의-REST-API-키
 ```
 
 4. [`sync-vacant.cmd`](./sync-vacant.cmd)를 더블 클릭합니다.
 5. 완료 메시지가 나오면 웹사이트에서 `공공 매물 새로고침`을 누릅니다.
 
 `.env.vacant.local`은 Git에서 제외되며 공유하면 안 됩니다. 빈집은 수시로 변하지 않으므로 하루 한 번 또는 필요할 때 실행하면 됩니다. Windows 작업 스케줄러에서는 프로그램을 `sync-vacant.cmd`, 시작 위치를 이 폴더로 지정해 자동 실행할 수 있습니다.
+
+동기화 도구는 농촌빈집은행 목록 응답에 공개된 도로명주소를 사용합니다. 원본에 좌표가 없으므로 `KAKAO_REST_API_KEY`가 있으면 그린대로 상세 화면과 동일하게 Kakao 주소검색으로 좌표화합니다. 변환 결과는 `.vacant-geocode-cache.json`에 저장해 같은 주소를 반복 조회하지 않습니다. 키 없이 `--allow-approximate`를 지정한 경우에만 OpenStreetMap Nominatim 근사 좌표를 사용하며, 실제 건물 위치와 차이가 날 수 있습니다. 이때는 [공개 Nominatim 사용 정책](https://operations.osmfoundation.org/policies/nominatim/)에 맞춰 한 번에 하나씩, 초당 1회 미만으로 조회합니다.
+
+좌표 변환만 점검하고 서버에 업로드하지 않으려면 `node sync-vacant.mjs --geocode-only`를 실행합니다.
+
+### 실제 농촌빈집 마커를 로컬에서 확인
+
+그린대로 상세 화면은 원본 좌표를 내려주지 않고 공개 도로명주소를 Kakao 주소검색으로 좌표화합니다. 같은 상세 좌표를 만들려면 [Kakao 주소 검색 REST API](https://developers.kakao.com/docs/ko/kakaomap/rest-api)의 REST API 키를 `.env.vacant.local`에 `KAKAO_REST_API_KEY=...`로 넣습니다. 이 키는 브라우저에 노출되지 않고 PC 동기화 도구에서만 사용됩니다.
+
+첫 번째 PowerShell:
+
+```powershell
+cd D:\Project\dajung-portfolio\land-link-map
+npm start
+```
+
+두 번째 PowerShell:
+
+```powershell
+cd D:\Project\dajung-portfolio\land-link-map
+node sync-vacant.mjs --local
+```
+
+동기화가 끝나면 `http://localhost:4173`을 새로고침하고 조회 지역을 선택합니다. 서버는 `.vacant-listings.local.json`에서 실제 그린대로 빈집과 Kakao 좌표를 읽어 주황색 `주` 마커로 표시합니다. Supabase 설정은 필요하지 않습니다. 키 없이 근사 좌표 동작만 확인하려면 `node sync-vacant.mjs --local --allow-approximate`를 사용할 수 있습니다.
 
 ## 데이터 공유 범위
 

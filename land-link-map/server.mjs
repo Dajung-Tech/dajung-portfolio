@@ -1,11 +1,12 @@
 import { createServer } from "node:http";
 import { timingSafeEqual } from "node:crypto";
-import { readFile, stat } from "node:fs/promises";
+import { readFile, stat, writeFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 
 const port = Number(process.env.PORT || 4173);
 const host = process.env.HOST || "127.0.0.1";
 const root = process.cwd();
+const LOCAL_VACANT_CACHE_FILE = join(root, ".vacant-listings.local.json");
 const FBO_PAGE_URL = "https://www.fbo.or.kr/gis/map.do?menuId=020080";
 const FBO_GIS_URL = "https://www.fbo.or.kr/gis/selectReqFlndList.do";
 const FBO_REGION_URL = "https://www.fbo.or.kr/gis/SelectLegalCode.do";
@@ -245,8 +246,15 @@ async function fetchFarmlandListings(legalCode, regionName) {
   return { listings, status: "connected", message: `${regionName} ${listings.length}건` };
 }
 
-function maskedAddress(value) {
-  return String(value || "").replace(/\d/g, "*").replace(/\s+/g, " ").trim();
+function vacantHouseAddress(item) {
+  const labelledAddress = String(item?.iemCn1 || "").split(":").slice(1).join(":");
+  return String(item?.addr || item?.dongAddr || labelledAddress || `${item?.ctpvNm || ""} ${item?.sggNm || ""}`)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function validKoreanCoordinates(lat, lng) {
+  return Number.isFinite(lat) && lat >= 30 && lat <= 44 && Number.isFinite(lng) && lng >= 123 && lng <= 132;
 }
 
 function regionMatches(item, regionName) {
@@ -358,15 +366,27 @@ async function requestVacantHousePayload(params) {
 }
 
 function normalizeVacantHouse(item) {
-  const address = maskedAddress(item.iemCn1?.split(":").slice(1).join(":") || `${item.ctpvNm || ""} ${item.sggNm || ""}`);
+  const address = vacantHouseAddress(item);
+  const lat = Number(item.geocodedLat ?? item.gisLat);
+  const lng = Number(item.geocodedLng ?? item.gisLot);
+  const hasCoordinates = validKoreanCoordinates(lat, lng);
   const features = String(item.iemCn5 || "").replace(/^\s*매물특징\s*:\s*/, "").trim();
   return {
     id: `greendaero-${item.bbscttSn}`, externalId: String(item.bbscttSn || ""), managedBy: "vacant-house-live",
     source: "vacant", propertyType: "house", dealType: greenDealType(item.estateDlingTypeCd),
     title: String(item.pstTtlNm || "농촌 빈집은행 매물"), address: address || `${item.ctpvNm || ""} ${item.sggNm || ""}`.trim(),
-    lat: null, lng: null, price: Number(item.grnteAmt) || 0, area: Number(item.areaSize) || 0,
+    lat: hasCoordinates ? lat : null, lng: hasCoordinates ? lng : null, price: Number(item.grnteAmt) || 0, area: Number(item.areaSize) || 0,
     landCategory: "농촌주택", url: `${GREENDAERO_PAGE_URL.replace("vacantlist", "vacantdetail")}?bbscttSn=${encodeURIComponent(item.bbscttSn)}`,
-    memo: ["그린대로 농촌빈집은행 공개 매물", features, item.aditCnIemNm1 ? `연계 플랫폼: ${item.aditCnIemNm1}` : "", "공식 목록에 좌표가 없어 지도 마커는 표시되지 않습니다."].filter(Boolean).join("\n"),
+    memo: [
+      "그린대로 농촌빈집은행 공개 매물",
+      features,
+      item.aditCnIemNm1 ? `연계 플랫폼: ${item.aditCnIemNm1}` : "",
+      hasCoordinates
+        ? item.geocodeProvider === "kakao"
+          ? "공개 주소를 Kakao 주소검색으로 변환한 위치입니다. 현장 확인 전 원문 주소를 함께 확인하세요."
+          : "공개 주소를 OpenStreetMap Nominatim으로 변환한 위치이며 실제 건물 위치와 차이가 날 수 있습니다."
+        : "주소 좌표를 확인하지 못해 지도 마커는 표시되지 않습니다."
+    ].filter(Boolean).join("\n"),
     verifiedAt: String(item.lastMdfcnDt || item.frstRegDt || new Date().toISOString()).slice(0, 10), syncedAt: new Date().toISOString(), readOnly: true
   };
 }
@@ -380,14 +400,16 @@ async function fetchVacantHouseListings(legalCode, regionName) {
   if (cached?.listings?.length) {
     const listings = cached.listings.filter((listing) => cachedVacantRegionMatches(listing, regionName));
     const synced = new Date(cached.syncedAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "short", timeStyle: "short" });
-    return { listings, status: "connected", message: `${regionName} ${listings.length}건 · PC 동기화 ${synced}` };
+    const markerCount = listings.filter((listing) => validKoreanCoordinates(listing.lat, listing.lng)).length;
+    return { listings, status: "connected", message: `${regionName} ${listings.length}건 · 지도 ${markerCount}건 · PC 동기화 ${synced}` };
   }
   const ctpvCd = GREENDAERO_SIDO_CODES[legalCode.slice(0, 2)];
   if (!ctpvCd) return { listings: [], status: "unsupported", message: "해당 시도는 농촌빈집은행 조회 대상이 아닙니다." };
   const params = new URLSearchParams({ page: "1", itemsPerPage: "500", ctpvCd, sggCd: "", estateDlingTypeCd: "", completedYn: "N", searchText: "" });
   const payload = await requestVacantHousePayload(params);
   const listings = (Array.isArray(payload.list) ? payload.list : []).filter((item) => regionMatches(item, regionName)).map(normalizeVacantHouse);
-  return { listings, status: "connected", message: `${regionName} ${listings.length}건 · 좌표 미제공` };
+  const markerCount = listings.filter((listing) => validKoreanCoordinates(listing.lat, listing.lng)).length;
+  return { listings, status: "connected", message: `${regionName} ${listings.length}건 · 지도 ${markerCount}건` };
 }
 
 function cachedVacantRegionMatches(listing, regionName) {
@@ -524,6 +546,9 @@ function normalizeCachedVacantListing(raw) {
   const title = cleanText(raw.title, 120);
   const address = cleanText(raw.address, 180);
   if (!/^greendaero-\d+$/.test(id) || !title || !address) return null;
+  const lat = Number(raw.lat);
+  const lng = Number(raw.lng);
+  const hasCoordinates = validKoreanCoordinates(lat, lng);
   let propertyUrl = "";
   try {
     const parsed = new URL(String(raw.url || ""));
@@ -538,8 +563,8 @@ function normalizeCachedVacantListing(raw) {
     dealType: raw.dealType === "lease" ? "lease" : "sale",
     title,
     address,
-    lat: null,
-    lng: null,
+    lat: hasCoordinates ? lat : null,
+    lng: hasCoordinates ? lng : null,
     price: Math.max(0, Number(raw.price) || 0),
     area: Math.max(0, Number(raw.area) || 0),
     landCategory: "농촌주택",
@@ -552,7 +577,18 @@ function normalizeCachedVacantListing(raw) {
 }
 
 async function getVacantCache() {
-  if (!databaseConfigured()) return null;
+  if (!databaseConfigured()) {
+    try {
+      const cached = JSON.parse(await readFile(LOCAL_VACANT_CACHE_FILE, "utf8"));
+      const listings = (Array.isArray(cached?.listings) ? cached.listings : []).map(normalizeCachedVacantListing).filter(Boolean);
+      return listings.length
+        ? { listings, syncedAt: String(cached.syncedAt || "") }
+        : { listings: [], syncedAt: "", setupRequired: true };
+    } catch (error) {
+      if (error.code === "ENOENT" || error instanceof SyntaxError) return { listings: [], syncedAt: "", setupRequired: true };
+      throw error;
+    }
+  }
   try {
     const rows = await supabaseRequest("family_external_caches?source=eq.vacant&select=payload,synced_at&limit=1");
     const row = Array.isArray(rows) ? rows[0] : null;
@@ -574,6 +610,10 @@ async function getVacantCache() {
 }
 
 async function persistVacantCache(listings, syncedAt) {
+  if (!databaseConfigured()) {
+    await writeFile(LOCAL_VACANT_CACHE_FILE, `${JSON.stringify({ version: 1, syncedAt, listings }, null, 2)}\n`, "utf8");
+    return;
+  }
   try {
     await supabaseRequest("family_external_caches?on_conflict=source", {
       method: "POST",
