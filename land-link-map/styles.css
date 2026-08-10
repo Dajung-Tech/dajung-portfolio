@@ -10,6 +10,9 @@
   --naver: #f28b45;
   --farmland: #2f9c67;
   --vacant: #d58a29;
+  --onbid: #2877b7;
+  --municipal: #a06f2c;
+  --binzibe: #2c8a7d;
   --disco: #356fc5;
   --hanbang: #b45883;
   --valuemap: #7156b5;
@@ -93,12 +96,15 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .dot.naver { background: var(--naver); box-shadow: 0 0 0 3px rgba(242,139,69,.13); }
 .dot.farmland { background: var(--farmland); box-shadow: 0 0 0 3px rgba(47,156,103,.13); }
 .dot.vacant { background: var(--vacant); box-shadow: 0 0 0 3px rgba(213,138,41,.13); }
+.dot.onbid { background: var(--onbid); box-shadow: 0 0 0 3px rgba(40,119,183,.13); }
+.dot.municipal { background: var(--municipal); box-shadow: 0 0 0 3px rgba(160,111,44,.13); }
+.dot.binzibe { background: var(--binzibe); box-shadow: 0 0 0 3px rgba(44,138,125,.13); }
 .dot.disco { background: var(--disco); box-shadow: 0 0 0 3px rgba(53,111,197,.13); }
 .dot.hanbang { background: var(--hanbang); box-shadow: 0 0 0 3px rgba(180,88,131,.13); }
 .dot.valuemap { background: var(--valuemap); box-shadow: 0 0 0 3px rgba(113,86,181,.13); }
 .dot.ddangya { background: var(--ddangya); box-shadow: 0 0 0 3px rgba(166,96,53,.13); }
 .dot.personal { background: var(--personal); box-shadow: 0 0 0 3px rgba(95,116,217,.13); }
-.segmented { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 11px; padding: 3px; border-radius: 9px; background: #eef2ef; }
+.segmented { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 11px; padding: 3px; border-radius: 9px; background: #eef2ef; }
 .segmented button { height: 30px; border: 0; border-radius: 7px; background: transparent; color: #738079; font-size: 11px; cursor: pointer; }
 .segmented button.active { background: white; color: var(--forest); font-weight: 700; box-shadow: 0 2px 7px rgba(30,60,48,.1); }
 
@@ -125,6 +131,8 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .listing-accent.naver { background: var(--naver); }
 .listing-accent.farmland { background: var(--farmland); }
 .listing-accent.vacant { background: var(--vacant); }
+.listing-accent.onbid { background: var(--onbid); }
+.listing-accent.municipal { background: var(--municipal); }
 .listing-accent.disco { background: var(--disco); }
 .listing-accent.hanbang { background: var(--hanbang); }
 .listing-accent.valuemap { background: var(--valuemap); }
@@ -184,6 +192,8 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .custom-marker.naver { background: var(--naver); }
 .custom-marker.farmland { background: var(--farmland); }
 .custom-marker.vacant { background: var(--vacant); }
+.custom-marker.onbid { background: var(--onbid); }
+.custom-marker.municipal { background: var(--municipal); }
 .custom-marker.disco { background: var(--disco); }
 .custom-marker.hanbang { background: var(--hanbang); }
 .custom-marker.valuemap { background: var(--valuemap); }

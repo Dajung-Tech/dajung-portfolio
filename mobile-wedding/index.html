@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>marry me — 모바일 청첩장</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Nanum+Myeongjo:wght@400;700;800&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="enhancements.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#top"><span class="brand-mark">m</span> marry me</a>
+        <nav class="top-nav" aria-label="주요 메뉴">
+          <a class="active" href="#editor">청첩장 만들기</a>
+          <a href="#gallery">내 청첩장</a>
+          <a href="#guide">이용 가이드</a>
+        </nav>
+        <button class="profile-button" id="profileButton" type="button" aria-label="내 프로필">DJ</button>
+      </header>
+
+      <main id="top">
+        <section class="intro" id="editor">
+          <div class="intro-copy">
+            <p class="eyebrow">YOUR MOMENT, YOUR WAY</p>
+            <h1>우리의 가장 빛나는 날,<br /><em>우리답게</em> 초대해요.</h1>
+            <p class="intro-text">사진부터 문구, 분위기까지. 쉽고 아름답게 완성하는<br />나만의 모바일 청첩장</p>
+            <div class="intro-actions">
+              <button class="button primary" id="openEditor" type="button">청첩장 꾸미기 <span>→</span></button>
+              <button class="text-button" id="previewInvitation" type="button">미리보기 <span>↗</span></button>
+            </div>
+            <div class="trusted"><span class="faces"><i></i><i></i><i></i></span> <strong>24,612쌍</strong>이 marry me와 함께했어요</div>
+          </div>
+          <div class="hero-composition" aria-label="청첩장 예시">
+            <div class="petal petal-one"></div><div class="petal petal-two"></div><div class="petal petal-three"></div>
+            <article class="invitation-card hero-card">
+              <div class="card-image"><img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=85" alt="손을 잡고 있는 신랑 신부" /></div>
+              <div class="card-content">
+                <p class="card-script">We are getting married</p>
+                <h2><span id="previewGroom">상원</span> <b>&amp;</b> <span id="previewBride">다정</span></h2>
+                <p class="card-date" id="previewDate">2025. 10. 18 SAT · 1:30 PM</p>
+              </div>
+            </article>
+            <div class="floating-note"><span>✦</span> 마음을 담아<br />초대합니다</div>
+            <div class="round-stamp">SAVE<br />THE DATE</div>
+          </div>
+        </section>
+
+        <section class="feature-strip" id="guide">
+          <div><span class="feature-icon">✺</span><p><strong>내 취향대로</strong><br />다양한 테마와 레이아웃</p></div>
+          <div><span class="feature-icon">▧</span><p><strong>한 곳에 모아서</strong><br />사진 · 일정 · 안내 정보</p></div>
+          <div><span class="feature-icon">♡</span><p><strong>마음을 전하는</strong><br />방명록과 참석 여부</p></div>
+          <div><span class="feature-icon">↗</span><p><strong>가볍게 공유하는</strong><br />링크 하나로 간편하게</p></div>
+        </section>
+
+        <section class="editor-section">
+          <div class="section-heading"><p class="eyebrow">MAKE IT YOURS</p><h2>직관적으로, <em>섬세하게.</em></h2><p>원하는 정보를 고르고 나만의 분위기로 채워 보세요.</p></div>
+          <div class="editor-layout">
+            <aside class="editor-panel" aria-label="청첩장 편집 도구">
+              <section class="editor-step is-open">
+                <button class="panel-head step-toggle" type="button" aria-expanded="true"><span><i class="step">01</i><b>기본 정보</b></span><em class="complete">완료 ✓</em><i class="chevron">⌃</i></button>
+                <div class="step-content">
+                  <label>신랑 · 신부 이름 <span>필수</span><div class="split-input"><input id="groomInput" value="상원" aria-label="신랑 이름" /><input id="brideInput" value="다정" aria-label="신부 이름" /></div></label>
+                  <label>예식 일시 <span>필수</span><input id="dateInput" type="datetime-local" value="2025-10-18T13:30" /></label>
+                  <label>메인 상단 문구<input id="openingLineInput" value="Our wedding day" /></label>
+                  <label>메인 타이틀<input id="mainTitleInput" value="상원 &amp; 다정" /></label>
+                  <label>초대 본문<textarea id="messageInput" rows="3">서로의 모든 날을 함께하고 싶은 두 사람이\n새로운 시작을 약속합니다.</textarea></label>
+                  <label>하객 화면 제목<input id="guestHeadingInput" value="결혼식에 초대합니다." /></label>
+                </div>
+              </section>
+              <section class="editor-step">
+                <button class="panel-head step-toggle" type="button" aria-expanded="false"><span><i class="step">02</i><b>사진과 갤러리</b></span><i class="chevron">⌄</i></button>
+                <div class="step-content">
+                  <label>대표 사진 <span>권장 3:4 비율</span><input id="heroPhotoInput" class="file-input" type="file" accept="image/*" /></label>
+                  <div class="upload-hint">사진을 선택하면 미리보기에 바로 반영돼요.</div>
+                  <label>갤러리 사진 <span>원하는 만큼</span><input id="galleryInput" class="file-input" type="file" accept="image/*" multiple /></label>
+                  <div class="editor-gallery" id="editorGallery"><p>선택한 사진이 여기에 보여요.</p></div>
+                </div>
+              </section>
+              <section class="editor-step">
+                <button class="panel-head step-toggle" type="button" aria-expanded="false"><span><i class="step">03</i><b>예식 장소와 안내</b></span><i class="chevron">⌄</i></button>
+                <div class="step-content">
+                  <label>예식장 이름<input id="venueInput" value="아펠가모 잠실" /></label>
+                  <label>주소<input id="addressInput" value="서울 송파구 올림픽로 269" /></label>
+                  <p class="design-label">하객에게 보여 줄 안내 방식</p>
+                  <div class="location-picker"><button type="button" class="active" data-location-mode="map">약도</button><button type="button" data-location-mode="text">글 안내</button><button type="button" data-location-mode="transit">대중교통</button></div>
+                  <div class="location-fields" id="locationFields">
+                    <label class="location-field" data-location-field="map">약도 안내 문구<textarea id="mapNoteInput" rows="2">잠실역 7번 출구에서 도보 5분 거리에 있습니다.</textarea></label>
+                    <label class="location-field" data-location-field="text">상세 안내<textarea id="transportInput" rows="2">잠실역 7번 출구 도보 5분</textarea></label>
+                    <label class="location-field" data-location-field="transit">지하철 안내<textarea id="subwayInput" rows="2">2호선 · 8호선 잠실역 7번 출구</textarea></label>
+                    <label class="location-field" data-location-field="transit">버스 안내<textarea id="busInput" rows="2">잠실역.롯데월드 정류장 하차</textarea></label>
+                  </div>
+                </div>
+              </section>
+              <section class="editor-step">
+                <button class="panel-head step-toggle" type="button" aria-expanded="false"><span><i class="step">04</i><b>마음 전하기</b></span><i class="chevron">⌄</i></button>
+                <div class="step-content">
+                  <label>신랑 계좌<input id="groomAccountInput" value="국민은행 123456-01-123456" /></label>
+                  <label>신부 계좌<input id="brideAccountInput" value="신한은행 110-456-789012" /></label>
+                  <p class="field-note">계좌 정보는 하객 화면의 ‘계좌 보기’에서만 노출됩니다.</p>
+                </div>
+              </section>
+              <section class="editor-step">
+                <button class="panel-head step-toggle" type="button" aria-expanded="false"><span><i class="step">05</i><b>청첩장 구성</b></span><i class="chevron">⌄</i></button>
+                <div class="step-content">
+                  <p class="field-note">섹션을 켜고 끄거나 화살표로 순서를 바꿔 보세요.</p>
+                  <div class="section-composer" id="sectionComposer"></div>
+                </div>
+              </section>
+              <section class="editor-step">
+                <button class="panel-head step-toggle" type="button" aria-expanded="false"><span><i class="step">06</i><b>디자인 스타일</b></span><i class="chevron">⌄</i></button>
+                <div class="step-content design-controls">
+                  <label>타이포그래피
+                    <select id="fontSelect"><option value="myeongjo">고전적인 명조</option><option value="modern">깔끔한 모던</option><option value="romantic">로맨틱 세리프</option></select>
+                  </label>
+                  <label>메인 글자 색상 <span id="textColorValue">#FFFFFF</span><input id="textColorInput" type="color" value="#ffffff" /></label>
+                  <div class="color-presets" role="group" aria-label="글자 색상 빠른 선택">
+                    <button type="button" class="color-preset active" data-text-color="#ffffff" style="--swatch:#ffffff" aria-label="흰색"></button>
+                    <button type="button" class="color-preset" data-text-color="#2b2522" style="--swatch:#2b2522" aria-label="검정색"></button>
+                    <button type="button" class="color-preset" data-text-color="#a95f5b" style="--swatch:#a95f5b" aria-label="로즈색"></button>
+                    <button type="button" class="color-preset" data-text-color="#556750" style="--swatch:#556750" aria-label="그린색"></button>
+                  </div>
+                  <p class="design-label">메인 화면 레이아웃</p>
+                  <div class="layout-picker" role="group" aria-label="메인 화면 레이아웃">
+                    <button type="button" class="layout-choice active" data-layout="photo"><span class="layout-thumb photo-layout"><i></i></span><b>포토 커버</b></button>
+                    <button type="button" class="layout-choice" data-layout="editorial"><span class="layout-thumb editorial-layout"><i></i><i></i></span><b>에디토리얼</b></button>
+                    <button type="button" class="layout-choice" data-layout="minimal"><span class="layout-thumb minimal-layout"><i></i></span><b>미니멀</b></button>
+                  </div>
+                  <p class="design-label">텍스트 정렬</p>
+                  <div class="align-picker"><button type="button" data-align="left">왼쪽</button><button type="button" class="active" data-align="center">가운데</button><button type="button" data-align="right">오른쪽</button></div>
+                  <p class="field-note drag-note">포토 커버를 선택한 뒤, 휴대폰 미리보기의 이름 영역을 직접 드래그해 보세요.</p>
+                </div>
+              </section>
+            </aside>
+            <div class="phone-stage">
+              <p class="preview-label"><span></span> LIVE PREVIEW</p>
+              <div class="phone-frame">
+                <div class="phone-top"><span>9:41</span><span>● ● ●</span></div>
+                <div class="mobile-invitation">
+                  <img class="mobile-main-photo" src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1000&q=85" alt="바닷가의 신랑 신부" />
+                  <div class="mobile-copy"><p class="card-script">Our wedding day</p><h3><span class="mobile-groom">상원</span> <b>&amp;</b> <span class="mobile-bride">다정</span></h3><p class="mobile-date">2025. 10. 18 SAT</p><span class="line"></span><p class="mobile-message">서로의 모든 날을 함께하고 싶은 두 사람이<br />새로운 시작을 약속합니다.</p></div>
+                </div>
+                <div class="phone-home"></div>
+              </div>
+            </div>
+            <aside class="theme-panel">
+              <p class="eyebrow">STYLE</p><h3>우리의 분위기</h3><p class="muted">마음에 드는 테마를 선택해 보세요.</p>
+              <div class="theme-grid" role="group" aria-label="청첩장 테마">
+                <button class="theme active" data-theme="blush" type="button"><span class="theme-preview blush"><i></i></span><b>Blush rose</b></button>
+                <button class="theme" data-theme="ivory" type="button"><span class="theme-preview ivory"><i></i></span><b>Classic ivory</b></button>
+                <button class="theme" data-theme="sage" type="button"><span class="theme-preview sage"><i></i></span><b>Garden sage</b></button>
+                <button class="theme" data-theme="night" type="button"><span class="theme-preview night"><i></i></span><b>Midnight</b></button>
+              </div>
+              <button class="button dark" id="saveInvitation" type="button">저장하고 공유하기 <span>→</span></button>
+              <p class="save-note">저장 후에도 언제든 수정할 수 있어요.</p>
+            </aside>
+          </div>
+        </section>
+
+        <section class="shared-section" id="gallery">
+          <div class="shared-head"><div><p class="eyebrow">SHARED WITH LOVE</p><h2>소중한 분들께<br /><em>마음을 전하세요.</em></h2></div><p>링크 하나로 전해지는 우리의 이야기.<br />하객은 편하게 보고, 마음을 남길 수 있어요.</p></div>
+          <div class="guest-view">
+            <div class="guest-cover"><p id="guestCouple">SANGWON &amp; DAJUNG</p><h3>Invitation</h3><span id="guestDate">2025. 10. 18</span></div>
+            <div class="guest-details"><p class="guest-kicker">WITH LOVE</p><h3><span id="guestNames">상원 그리고 다정</span><br /><span id="guestHeading">결혼식에 초대합니다.</span></h3><p class="guest-body" id="guestMessage">저희 두 사람이 사랑으로 하나 되어<br />새로운 출발을 하려 합니다.</p><div class="detail-actions"><button type="button" data-modal="galleryModal">갤러리 보기 <span>→</span></button><button type="button" data-modal="locationModal">오시는 길 <span>→</span></button></div><div class="account-row"><div><span>마음 전하기</span><b>축의금 계좌 안내</b></div><button type="button" id="accountButton">계좌 보기</button></div></div>
+          </div>
+          <div class="invite-flow"><p class="flow-label">GUEST INVITATION PREVIEW</p><div class="guest-invitation" id="guestInvitation"></div></div>
+        </section>
+
+        <section class="cta"><p class="eyebrow">LET'S BEGIN</p><h2>지금, 우리의 이야기를<br /><em>시작해 볼까요?</em></h2><button class="button primary" id="ctaEditor" type="button">무료로 청첩장 만들기 <span>→</span></button></section>
+      </main>
+      <footer><a class="brand" href="#top"><span class="brand-mark">m</span> marry me</a><span>© 2025 MARRY ME. ALL RIGHTS RESERVED.</span><span>Privacy · Terms · Help</span></footer>
+    </div>
+
+    <dialog class="modal" id="galleryModal"><button class="close-modal" aria-label="닫기">×</button><p class="eyebrow">OUR MOMENTS</p><h2>Gallery</h2><div class="gallery-grid" id="guestGallery"><img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80" alt="웨딩 사진 1" /><img src="https://images.unsplash.com/photo-1544078751-58fee2d8a03b?auto=format&fit=crop&w=800&q=80" alt="웨딩 사진 2" /><img src="https://images.unsplash.com/photo-1507504031003-b417219a0fde?auto=format&fit=crop&w=800&q=80" alt="웨딩 사진 3" /><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=80" alt="웨딩 사진 4" /></div></dialog>
+    <dialog class="modal small-modal" id="locationModal"><button class="close-modal" aria-label="닫기">×</button><p class="eyebrow">LOCATION</p><h2 id="locationTitle">아펠가모 잠실</h2><p id="locationAddress">서울 송파구 올림픽로 269<br />잠실역 7번 출구 도보 5분</p><div class="map-placeholder"><span>⌖</span> <span id="mapPlaceName">서울특별시 송파구</span></div><button class="button dark" type="button" id="mapButton">지도 앱으로 열기 <span>↗</span></button></dialog>
+    <dialog class="modal small-modal" id="accountModal"><button class="close-modal" aria-label="닫기">×</button><p class="eyebrow">GIFT ACCOUNT</p><h2>마음 전하기</h2><div class="account-card"><span id="groomAccountLabel">신랑 상원</span><b id="groomAccountText">국민은행 123456-01-123456</b><button class="copy-account" type="button" data-account="국민은행 123456-01-123456">계좌번호 복사</button></div><div class="account-card"><span id="brideAccountLabel">신부 다정</span><b id="brideAccountText">신한은행 110-456-789012</b><button class="copy-account" type="button" data-account="신한은행 110-456-789012">계좌번호 복사</button></div></dialog>
+    <dialog class="modal small-modal" id="profileModal"><button class="close-modal" aria-label="닫기">×</button><p class="eyebrow">MY WEDDINGS</p><h2 id="profileTitle">내 청첩장</h2><p id="profileDescription">청첩장을 선택하거나 새로운 이야기를 시작해 보세요.</p><div class="invitation-list" id="invitationList"></div><button class="button dark" type="button" id="newInvitationButton">새 청첩장 만들기 <span>→</span></button><button class="plain-action" type="button" id="logoutButton">로그아웃</button></dialog>
+    <dialog class="modal small-modal" id="authModal"><button class="close-modal" aria-label="닫기">×</button><p class="eyebrow">WELCOME TO MARRY ME</p><h2 id="authTitle">내 청첩장을 시작해요</h2><p id="authDescription">간단한 가입 후 언제든 다시 편집할 수 있어요.</p><form id="authForm"><label class="auth-name-field">이름<input id="authName" maxlength="40" placeholder="이름을 입력해 주세요" /></label><label>이메일<input id="authEmail" type="email" required placeholder="name@example.com" /></label><label>비밀번호<input id="authPassword" type="password" required minlength="8" placeholder="8자 이상 입력해 주세요" /></label><button class="button dark" type="submit" id="authSubmit">가입하고 시작하기 <span>→</span></button></form><button class="plain-action" type="button" id="authModeButton">이미 계정이 있어요</button></dialog>
+    <dialog class="modal small-modal" id="rsvpModal"><button class="close-modal" aria-label="닫기">×</button><p class="eyebrow">RSVP</p><h2>참석 여부 전달하기</h2><form id="rsvpForm"><label class="rsvp-field">성함<input id="rsvpName" required maxlength="50" placeholder="성함을 입력해 주세요" /></label><label class="rsvp-field">참석 인원<select id="rsvpGuests"><option value="1">1명</option><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option></select></label><input id="rsvpAttendance" type="hidden" value="attending" /><button class="button dark" type="submit" id="rsvpSubmit">참석 여부 전달 <span>→</span></button></form></dialog>
+    <div class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

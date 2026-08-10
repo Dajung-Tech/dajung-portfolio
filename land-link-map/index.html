@@ -40,6 +40,8 @@
             <div class="source-filters" id="sourceFilters">
               <button class="filter-chip active" data-source="farmland"><i class="dot farmland"></i>농지은행 <b id="farmlandCount">0</b></button>
               <button class="filter-chip active" data-source="vacant"><i class="dot vacant"></i>농촌빈집 <b id="vacantCount">0</b></button>
+              <button class="filter-chip active" data-source="onbid"><i class="dot onbid"></i>온비드 공매 <b id="onbidCount">0</b></button>
+              <button class="filter-chip active" data-source="municipal"><i class="dot municipal"></i>지자체 빈집 <b id="municipalCount">0</b></button>
               <button class="filter-chip active" data-source="personal"><i class="dot personal"></i>직접 등록 <b id="personalCount">0</b></button>
             </div>
             <button class="favorite-filter" id="favoritesOnly" type="button"><span>☆</span> 즐겨찾기만 보기 <b id="favoriteCount">0</b></button>
@@ -47,6 +49,7 @@
               <button class="active" data-deal="all">전체</button>
               <button data-deal="sale">매매</button>
               <button data-deal="lease">임대</button>
+              <button data-deal="candidate">빈집 후보</button>
             </div>
           </section>
 
@@ -102,7 +105,7 @@
           <button id="externalMapsButton" title="선택 지역을 외부 부동산 사이트에서 보기"><svg viewBox="0 0 24 24"><path d="M14 3h7v7M21 3l-9 9"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></button>
         </div>
         <div class="map-hint" id="mapHint"><span>팁</span> 지도를 클릭하면 그 위치로 새 매물을 등록할 수 있어요.</div>
-        <div class="map-legend"><span><i class="dot farmland"></i>농지은행</span><span><i class="dot vacant"></i>농촌빈집</span><span><i class="dot personal"></i>직접 등록</span></div>
+        <div class="map-legend"><span><i class="dot farmland"></i>농지은행</span><span><i class="dot vacant"></i>농촌빈집</span><span><i class="dot onbid"></i>온비드</span><span><i class="dot municipal"></i>지자체 빈집</span><span><i class="dot personal"></i>직접 등록</span></div>
       </main>
 
       <aside class="detail-panel" id="detailPanel" aria-live="polite">
@@ -167,8 +170,10 @@
           <button type="button" class="external-provider hanbang" data-provider="hanbang"><i class="dot hanbang"></i><span><b>한방</b><small>지역 연결 확인 중</small></span><em>확인 중…</em></button>
           <button type="button" class="external-provider ddangya" data-provider="ddangya"><i class="dot ddangya"></i><span><b>땅야</b><small>지역 연결 확인 중</small></span><em>확인 중…</em></button>
           <button type="button" class="external-provider valuemap" data-provider="valuemap"><i class="dot valuemap"></i><span><b>밸류맵</b><small>지역 연결 확인 중</small></span><em>확인 중…</em></button>
+          <button type="button" class="external-provider binzibe" data-provider="binzibe"><i class="dot binzibe"></i><span><b>빈집애</b><small>공식 빈집 매물 검색</small></span><em>확인 중…</em></button>
+          <button type="button" class="external-provider onbid" data-provider="onbid"><i class="dot onbid"></i><span><b>온비드</b><small>공식 공매 검색</small></span><em>확인 중…</em></button>
         </div>
-        <p class="external-attribution">각 사이트가 공식적으로 제공하는 지역 URL만 사용합니다.</p>
+        <p class="external-attribution">공식 검색 화면만 연결하며, 빈집애에서는 선택 지역명을 한 번 더 입력해 주세요.</p>
       </div>
     </dialog>
 

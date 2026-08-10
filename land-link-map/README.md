@@ -118,6 +118,8 @@ node sync-vacant.mjs --local
 | 지도 종류·조회 지역 | 각 브라우저 | 공유되지 않음 |
 | 농지은행 조회 캐시 | Render 서버 메모리 | 서버 재시작 시 다시 조회 |
 | 농촌빈집 조회 캐시 | Supabase | PC 동기화 후 공유됨 |
+| 온비드 공매 조회 캐시 | Render 서버 메모리 | 공공데이터포털 인증키 필요 |
+| 지자체 빈집 현황 캐시 | Render 서버 메모리 | 현재 충주시 공개 데이터 연결 |
 
 공용 DB를 처음 연결한 브라우저는 기존 로컬 직접 매물·메모·즐겨찾기를 한 번 자동으로 공용 DB에 옮깁니다.
 
@@ -136,6 +138,8 @@ node sync-vacant.mjs --local
 - 한방: 공식 검색 폼에 시·도/시·군·구/읍·면·동 코드를 제출합니다.
 - 땅야: 법정동 코드를 포함한 공식 지역 매물 목록을 엽니다.
 - 네이버 부동산: 조회 지역의 농지 좌표 범위 또는 시·도 중심으로 이동하고 주택 매매 필터를 적용합니다.
+- 빈집애: 공식 빈집 매물 화면을 열고 선택 지역명을 안내합니다.
+- 온비드: 공식 공매 검색 화면을 엽니다. API 키가 설정되면 토지잇기 목록에도 공매가 표시됩니다.
 - 디스코·밸류맵: 공식 지역 딥링크가 없어 자동 적용 버튼이 비활성화됩니다.
 
 민간 서비스의 매물 데이터를 수집하지 않고 공식 지역 링크만 엽니다.
@@ -148,13 +152,19 @@ $env:FARMLAND_REGION_NAME="충청북도"
 $env:LIVE_SYNC_MINUTES="30"
 $env:FARMLAND_SYNC_ENABLED="true"
 $env:VACANT_HOUSE_SYNC_ENABLED="true"
+$env:DATA_GO_KR_SERVICE_KEY="공공데이터포털-일반인증키"
+$env:KAKAO_REST_API_KEY="Kakao-Developers-REST-API-키"
+$env:ONBID_SYNC_ENABLED="true"
+$env:MUNICIPAL_VACANT_SYNC_ENABLED="true"
 ```
+
+`DATA_GO_KR_SERVICE_KEY`는 공공데이터포털에서 `차세대 온비드 부동산 물건목록 조회서비스`와 사용할 지자체 빈집 데이터의 활용신청을 완료한 뒤 발급받은 일반 인증키입니다. 온비드 주소에 좌표가 없으면 서버의 `KAKAO_REST_API_KEY`로 보완합니다. 지자체 빈집 데이터는 매매·임대 매물이 아니므로 화면에서 `빈집 후보 · 거래 확인`으로 별도 표시합니다.
 
 ## CSV
 
 `data/sample-properties.csv`를 참고하세요.
 
-- `source`: `farmland`, `vacant`, `personal`
+- `source`: `farmland`, `vacant`, `onbid`, `municipal`, `personal`
 - `propertyType`: `land`, `house`, `farmland`
 - `dealType`: `sale`, `lease`
 - `price`: 만원 단위

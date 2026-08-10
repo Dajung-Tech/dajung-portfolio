@@ -1,0 +1,84 @@
+:root { --ink:#202b44; --ink-soft:#516078; --cream:#fffbed; --paper:#fffef7; --coral:#d96f68; --mint:#c4ded1; --line:#ded7c6; }
+* { box-sizing:border-box; }
+body { margin:0; min-width:320px; background:#e9e2d2; color:var(--ink); font-family:Pretendard,Arial,sans-serif; }
+button,input,textarea { font:inherit; }
+button { cursor:pointer; }
+.site-header { height:62px; padding:0 max(24px,5vw); display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--ink); background:var(--cream); }
+.brand { color:var(--ink); text-decoration:none; font:10px 'Press Start 2P',monospace; letter-spacing:.2px; }
+.brand span,.header-actions { color:#a5766b; font:600 11px Pretendard,Arial,sans-serif; letter-spacing:0; }
+.header-actions { display:flex; align-items:center; gap:17px; }
+.save-button,.tiny-button { border:3px solid var(--ink); background:var(--coral); color:white; box-shadow:3px 3px 0 var(--ink); font:9px 'Press Start 2P',monospace; }
+.save-button { padding:11px 13px; }
+.save-button:active,.tiny-button:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+.app-layout { max-width:1400px; min-height:calc(100dvh - 62px); margin:auto; display:grid; grid-template-columns:minmax(355px,470px) 1fr; }
+.editor-panel { padding:38px clamp(22px,4vw,52px) 45px; overflow:auto; background:#fffdf5; border-right:3px solid var(--ink); }
+.editor-heading { margin-bottom:31px; }
+.editor-heading p,.preview-label,.card-kicker { margin:0 0 11px; color:#b17069; font:9px 'Press Start 2P',monospace; line-height:1.6; }
+.editor-heading h1 { margin:0 0 13px; font:700 28px/1.35 'Gowun Batang',serif; letter-spacing:-1.4px; }
+.editor-heading span { color:#7c8492; font-size:12px; line-height:1.55; }
+.editor-section { margin-top:25px; padding-top:23px; border-top:1px solid var(--line); }
+.section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:13px; }
+.section-title h2 { margin:0; font:700 16px 'Gowun Batang',serif; }
+.tiny-button { padding:7px 8px; box-shadow:2px 2px 0 var(--ink); font-size:7px; }
+label { display:grid; gap:7px; margin-top:12px; color:#667085; font-size:11px; font-weight:700; }
+input,textarea { width:100%; padding:10px 11px; border:1px solid #cfc7b6; border-radius:3px; outline:none; background:white; color:var(--ink); font-size:13px; resize:vertical; }
+input:focus,textarea:focus { border-color:var(--coral); box-shadow:0 0 0 3px rgba(217,111,104,.14); }
+.two-columns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.scene-list { display:grid; gap:7px; }
+.scene-item { display:flex; align-items:center; gap:10px; width:100%; padding:11px; border:2px solid #d9d1be; background:#fff; color:var(--ink); text-align:left; }
+.scene-item.active { border-color:var(--ink); background:#eaf0df; box-shadow:2px 2px 0 var(--ink); }
+.scene-item b { display:grid; place-items:center; width:24px; height:24px; flex:none; border:2px solid var(--ink); border-radius:50%; background:var(--coral); color:#fff; font:8px 'Press Start 2P',monospace; }
+.scene-item span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; font-weight:700; }
+.scene-actions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:9px; }
+.scene-actions button,.reset-button { padding:9px 5px; border:1px solid #cfc7b6; background:#fff; color:#607087; font-size:10px; }
+.scene-actions .danger { color:#ba5e59; }
+.upload-control { display:block; position:relative; overflow:hidden; border:1px dashed #aeb9aa; padding:10px; background:#f3f7ee; color:#5b7765; text-align:center; font-size:12px; }
+.upload-control input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.controls input[type=color] { height:40px; padding:4px; }
+.controls input[type=range],input[type=range] { accent-color:var(--coral); }
+.reset-button { width:100%; margin-top:27px; }
+.preview-area { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 25px; background:radial-gradient(circle at 50% 27%,#f8e7bb 0 12%,transparent 38%),linear-gradient(145deg,#7b9b7b,#465c65); }
+.preview-label { color:#fff5d7; }
+.phone-frame { width:min(100%,430px); overflow:hidden; border:5px solid var(--ink); border-radius:26px; background:var(--paper); box-shadow:12px 13px 0 rgba(27,38,56,.36); }
+.phone-top { height:45px; padding:0 14px; display:flex; align-items:center; justify-content:space-between; background:var(--ink); color:#fff8df; font:7px 'Press Start 2P',monospace; }
+.game-scene { position:relative; height:405px; overflow:hidden; background:url('assets/first-journey-background.png') center/cover no-repeat; image-rendering:auto; }
+.scene-shade { position:absolute; inset:0; background:rgba(18,31,48,.2); pointer-events:none; }
+.scene-title { position:absolute; top:14%; left:50%; width:calc(100% - 32px); transform:translateX(-50%); padding:13px 14px; border:3px solid var(--ink); background:rgba(255,254,245,.94); box-shadow:4px 4px 0 rgba(32,43,68,.32); color:var(--ink); text-align:center; transition:top .2s ease; }
+.scene-title span { display:block; margin-bottom:5px; color:var(--coral); font:7px 'Press Start 2P',monospace; }
+.scene-title strong { display:block; font:700 19px 'Gowun Batang',serif; }
+.sound-button { position:absolute; top:14px; right:14px; display:grid; place-items:center; width:31px; height:31px; border:2px solid var(--ink); border-radius:50%; background:#fffef1; color:var(--coral); font-size:17px; }
+.dialogue-window { min-height:143px; display:grid; grid-template-columns:77px 1fr 40px; gap:10px; align-items:center; padding:12px; border-top:5px solid var(--ink); background:var(--paper); }
+.portrait { position:relative; width:58px; height:76px; overflow:hidden; border:3px solid var(--ink); border-radius:30px 30px 6px 6px; background:#f5ba97; }
+.hair { position:absolute; z-index:1; top:-7px; left:-5px; width:64px; height:39px; border:3px solid var(--ink); border-radius:48% 48% 35% 35%; background:#655047; }
+.face { position:absolute; z-index:2; top:28px; left:12px; color:#654a43; font-weight:700; }
+.coat { position:absolute; bottom:-5px; left:-4px; width:64px; height:38px; border:3px solid var(--ink); border-radius:25px 25px 0 0; background:#e0eada; }
+.dialogue-content p { margin:0 0 9px; color:var(--coral); font:8px 'Press Start 2P',monospace; }
+.dialogue-content h2 { margin:0; color:var(--ink); font:700 16px/1.55 'Gowun Batang',serif; letter-spacing:-.4px; white-space:pre-wrap; }
+.next-button { align-self:end; padding:0; border:0; background:transparent; color:#57637a; font:10px 'Press Start 2P',monospace; line-height:1.3; }
+.next-button small { font:10px Pretendard,Arial,sans-serif; }
+.invitation-card { padding:25px 23px 21px; border-top:5px solid var(--ink); background:#fff9e8; text-align:center; }
+.invitation-card h2 { margin:0; color:var(--ink); font:700 25px 'Gowun Batang',serif; }
+.card-message { margin:14px auto 21px; color:#5f6878; font:14px/1.65 'Gowun Batang',serif; white-space:pre-wrap; }
+dl { margin:0; text-align:left; }
+dl div { display:grid; grid-template-columns:50px 1fr; gap:12px; padding:10px 0; border-top:1px dashed #d4c7a9; }
+dt { color:var(--coral); font:7px/1.7 'Press Start 2P',monospace; }
+dd { margin:0; color:#45546b; font-size:12px; line-height:1.4; }
+.phone-controls { display:grid; grid-template-columns:1fr 1fr; border-top:1px solid #d8cfbb; }
+.phone-controls button { min-height:47px; border:0; background:#fffef7; color:#526077; font-size:12px; }
+.phone-controls button + button { border-left:1px solid #d8cfbb; color:var(--coral); font-weight:700; }
+.mobile-hint { margin:18px 0 0; color:#eef4de; font-size:12px; }
+.toast { position:fixed; left:50%; bottom:22px; z-index:10; padding:11px 15px; transform:translate(-50%,20px); background:var(--ink); color:white; font-size:12px; opacity:0; transition:.2s; pointer-events:none; }
+.toast.show { transform:translate(-50%,0); opacity:1; }
+@media (max-width:760px) {
+  body { background:var(--ink); }
+  .site-header,.editor-panel,.preview-label,.mobile-hint { display:none; }
+  .app-layout { display:block; min-height:100dvh; }
+  .preview-area { min-height:100dvh; padding:0; background:var(--ink); }
+  .phone-frame { width:100%; min-height:100dvh; border:0; border-radius:0; box-shadow:none; display:flex; flex-direction:column; }
+  .phone-top { min-height:54px; padding:0 17px; }
+  .game-scene { height:clamp(300px,50dvh,480px); flex:none; }
+  .dialogue-window { min-height:150px; }
+  .invitation-card { padding:24px 20px; }
+  .phone-controls { margin-top:auto; }
+}
+@media (max-width:390px) { .phone-top { font-size:6px; } .game-scene { height:45dvh; } .dialogue-content h2 { font-size:15px; } }

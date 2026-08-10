@@ -3,12 +3,16 @@ const SETTINGS_KEY = "land-link-map.settings.v1";
 const SHARED_STATE_KEY = "land-link-map.shared-state.v1";
 const SHARED_MIGRATED_KEY = "land-link-map.shared-migrated.v1";
 const DEFAULT_CENTER = { lat: 36.5, lng: 127.8 };
-const SOURCE_KEYS = ["farmland", "vacant", "personal"];
+const SOURCE_KEYS = ["farmland", "vacant", "onbid", "municipal", "personal"];
 const SOURCE_LABELS = {
-  farmland: "농지은행", vacant: "농촌빈집은행", personal: "직접 등록"
+  farmland: "농지은행",
+  vacant: "농촌빈집은행",
+  onbid: "온비드 공매",
+  municipal: "지자체 빈집",
+  personal: "직접 등록"
 };
 const TYPE_LABELS = { land: "토지", house: "주택", farmland: "농지" };
-const DEAL_LABELS = { sale: "매매", lease: "임대" };
+const DEAL_LABELS = { sale: "매매", lease: "임대", candidate: "거래 확인" };
 const MARKER_LABELS = { land: "토", house: "주", farmland: "농" };
 const CSV_COLUMNS = ["id", "source", "propertyType", "dealType", "title", "address", "lat", "lng", "price", "area", "landCategory", "url", "memo", "verifiedAt"];
 const DEFAULT_FARMLAND_REGION = {
@@ -113,7 +117,7 @@ function normalizeProperty(raw) {
     id: String(raw.id || uid()),
     source: SOURCE_KEYS.includes(raw.source) ? raw.source : "personal",
     propertyType: ["land", "house", "farmland"].includes(raw.propertyType) ? raw.propertyType : "land",
-    dealType: raw.dealType === "lease" ? "lease" : "sale",
+    dealType: ["lease", "candidate"].includes(raw.dealType) ? raw.dealType : "sale",
     title: String(raw.title).trim(),
     address: String(raw.address).trim(),
     lat: hasCoordinates ? lat : null,
@@ -125,7 +129,7 @@ function normalizeProperty(raw) {
     memo: String(raw.memo || "").trim(),
     verifiedAt: String(raw.verifiedAt || "").slice(0, 10),
     externalId: String(raw.externalId || ""),
-    managedBy: /^(?:farmland-live|vacant-house-live)$/.test(raw.managedBy || "") ? raw.managedBy : "",
+    managedBy: /^(?:farmland-live|vacant-house-live|onbid-live|municipal-vacant-live)$/.test(raw.managedBy || "") ? raw.managedBy : "",
     syncedAt: String(raw.syncedAt || ""),
     readOnly: Boolean(raw.readOnly)
   };
@@ -234,6 +238,7 @@ function formatNumber(value, maximumFractionDigits = 0) {
 }
 
 function formatPrice(property) {
+  if (property.dealType === "candidate") return "거래 여부 확인";
   const value = Number(property.price);
   if (!value) return "가격 미입력";
   const prefix = property.dealType === "lease" ? "연 " : "";
@@ -369,13 +374,13 @@ function renderDetail() {
       <div class="detail-source"><i class="dot ${property.source}"></i>${SOURCE_LABELS[property.source]} · ${DEAL_LABELS[property.dealType]}</div>
       <h2>${escapeHtml(property.title)}</h2>
       <p class="detail-address">${escapeHtml(property.address)}</p>
-      <div class="detail-price">${formatPrice(property)}<small>${property.dealType === "lease" ? "연 임대료" : "매매가"}</small></div>
+      <div class="detail-price">${formatPrice(property)}<small>${property.dealType === "candidate" ? "지자체·소유자 확인 필요" : property.dealType === "lease" ? "연 임대료" : "매매가"}</small></div>
     </div>
     <div class="detail-body">
       <div class="detail-stats">
         <div class="detail-stat"><span>면적</span><strong>${property.area ? `${formatNumber(property.area / 3.3058, 1)}평` : "—"}</strong></div>
         <div class="detail-stat"><span>㎡</span><strong>${property.area ? `${formatNumber(property.area, 1)}㎡` : "—"}</strong></div>
-        <div class="detail-stat"><span>${property.dealType === "lease" ? "평당 연 임대료" : "평당 가격"}</span><strong>${pricePerPyeong ? `${formatNumber(pricePerPyeong, 1)}만원` : "—"}</strong></div>
+        <div class="detail-stat"><span>${property.dealType === "candidate" ? "거래 상태" : property.dealType === "lease" ? "평당 연 임대료" : "평당 가격"}</span><strong>${property.dealType === "candidate" ? "빈집 후보" : pricePerPyeong ? `${formatNumber(pricePerPyeong, 1)}만원` : "—"}</strong></div>
         <div class="detail-stat"><span>지목 / 종류</span><strong>${escapeHtml(property.landCategory || TYPE_LABELS[property.propertyType])}</strong></div>
       </div>
       <section class="detail-section"><h3>가족 공용 메모</h3><div class="shared-memo-editor"><textarea id="sharedMemoInput" maxlength="1000" placeholder="현장 확인 내용이나 가족과 공유할 의견을 적어 주세요.">${escapeHtml(sharedMemo(property))}</textarea><div class="shared-memo-actions"><small>${state.sharedEnabled ? "가족 모두에게 바로 공유됩니다." : "현재는 이 브라우저에만 저장됩니다."}</small><button type="button" class="secondary-button" id="saveSharedMemo">메모 저장</button></div></div></section>
@@ -739,7 +744,7 @@ async function loadSampleData() {
 }
 
 function syncSummary(payload) {
-  const labels = { farmland: "농지", vacant: "빈집" };
+  const labels = { farmland: "농지", vacant: "농촌빈집", onbid: "온비드", municipal: "지자체 빈집" };
   const updated = payload.updatedAt ? new Date(payload.updatedAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }) : "—";
   const connected = Object.entries(payload.sources || {}).filter(([, source]) => source.status === "connected").map(([key, source]) => `${labels[key] || key} ${source.count}건`);
   const setupRequired = Object.entries(payload.sources || {})
@@ -868,7 +873,7 @@ async function syncLiveListings({ force = false, silent = false } = {}) {
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || "동기화 요청에 실패했습니다.");
     const incoming = payload.listings.map(normalizeProperty).filter(Boolean);
-    const managedSources = new Set(["farmland-live", "vacant-house-live"]);
+    const managedSources = new Set(["farmland-live", "vacant-house-live", "onbid-live", "municipal-vacant-live"]);
     state.properties = [...incoming, ...state.properties.filter((item) => !managedSources.has(item.managedBy))];
     state.syncStatus = payload;
     persist();

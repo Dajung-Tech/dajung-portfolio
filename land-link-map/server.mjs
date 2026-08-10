@@ -13,6 +13,17 @@ const FBO_REGION_URL = "https://www.fbo.or.kr/gis/SelectLegalCode.do";
 const GREENDAERO_PAGE_URL = "https://www.greendaero.go.kr/svc/rfph/cpif/front/vacantlist.do";
 const GREENDAERO_LIST_URL = "https://www.greendaero.go.kr/svc/rfph/cpif/getVacantHomePagingList.do";
 const GREENDAERO_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
+const ONBID_LIST_URL = "https://apis.data.go.kr/B010003/OnbidRlstListSrvc2/getRlstCltrList2";
+const ONBID_PAGE_URL = "https://www.onbid.co.kr/";
+const MUNICIPAL_VACANT_PROVIDERS = [{
+  legalCode: "43130",
+  name: "충청북도 충주시",
+  endpoint: "https://api.odcloud.kr/api/15144409/v1/uddi:11a8fbdd-020d-4e31-8607-a7791e031b41",
+  sourceUrl: "https://www.data.go.kr/data/15144409/fileData.do",
+  dataDate: "2025-06-30"
+}];
+const BINZIBE_SALE_URL = "https://www.binzibe.kr/main/html/sale.html";
+const KAKAO_ADDRESS_URL = "https://dapi.kakao.com/v2/local/search/address.json";
 const HANBANG_REGION_URL = "http://www.karhanbang.com/office/ajax_combo_search.asp";
 const HANBANG_SALE_URL = "https://www.karhanbang.com/sale/";
 const syncMinutes = Math.max(15, Number(process.env.LIVE_SYNC_MINUTES) || 30);
@@ -20,6 +31,10 @@ const syncMinutes = Math.max(15, Number(process.env.LIVE_SYNC_MINUTES) || 30);
 const liveConfig = {
   farmlandEnabled: process.env.FARMLAND_SYNC_ENABLED !== "false",
   vacantHouseEnabled: process.env.VACANT_HOUSE_SYNC_ENABLED !== "false",
+  onbidEnabled: process.env.ONBID_SYNC_ENABLED !== "false",
+  municipalVacantEnabled: process.env.MUNICIPAL_VACANT_SYNC_ENABLED !== "false",
+  publicDataServiceKey: String(process.env.DATA_GO_KR_SERVICE_KEY || process.env.PUBLIC_DATA_SERVICE_KEY || ""),
+  kakaoRestApiKey: String(process.env.KAKAO_REST_API_KEY || ""),
   defaultLegalCode: process.env.FARMLAND_LEGAL_CODE || "43",
   defaultRegionName: process.env.FARMLAND_REGION_NAME || "충청북도"
 };
@@ -31,6 +46,8 @@ const sharedConfig = {
 };
 
 const liveCaches = new Map();
+const addressGeocodeCache = new Map();
+const municipalVacantCache = new Map();
 const VACANT_CACHE_PROPERTY_ID = "__system-vacant-cache__";
 const regionCache = new Map();
 const externalLinkCache = new Map();
@@ -157,6 +174,62 @@ async function supabaseRequest(path, { method = "GET", body, prefer = "" } = {})
 
 async function fetchWithTimeout(url, options = {}, timeout = 15_000) {
   return fetch(url, { ...options, signal: AbortSignal.timeout(timeout) });
+}
+
+function decodedServiceKey() {
+  const key = liveConfig.publicDataServiceKey.trim();
+  if (!key) return "";
+  try { return decodeURIComponent(key); } catch { return key; }
+}
+
+function publicApiItems(payload) {
+  const root = payload?.response || payload || {};
+  const header = root.header || payload?.header || {};
+  const resultCode = String(header.resultCode ?? header.result_code ?? "");
+  if (resultCode && !new Set(["00", "0", "NORMAL_SERVICE"]).has(resultCode)) {
+    throw new Error(header.resultMsg || header.result_msg || `공공데이터 API 오류 (${resultCode})`);
+  }
+  const body = root.body || payload?.body || {};
+  const items = body.items?.item ?? body.items ?? payload?.data ?? body.data ?? [];
+  if (Array.isArray(items)) return items;
+  return items && typeof items === "object" ? [items] : [];
+}
+
+function firstValue(item, keys) {
+  for (const key of keys) {
+    const value = item?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") return value;
+  }
+  return "";
+}
+
+function compactAddress(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, 160);
+}
+
+async function geocodeAddressWithKakao(address) {
+  const query = compactAddress(address);
+  if (!query || !liveConfig.kakaoRestApiKey) return null;
+  if (addressGeocodeCache.has(query)) return addressGeocodeCache.get(query);
+  const pending = (async () => {
+    const url = new URL(KAKAO_ADDRESS_URL);
+    url.search = new URLSearchParams({ query, analyze_type: "similar", size: "1" });
+    const response = await fetchWithTimeout(url, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `KakaoAK ${liveConfig.kakaoRestApiKey}`,
+        "User-Agent": "land-link-map/2.0 (public-listing geocoder)"
+      }
+    }, 15_000);
+    if (!response.ok) return null;
+    const payload = await response.json();
+    const result = Array.isArray(payload?.documents) ? payload.documents[0] : null;
+    const lat = Number(result?.y);
+    const lng = Number(result?.x);
+    return validKoreanCoordinates(lat, lng) ? { lat, lng } : null;
+  })().catch(() => null);
+  addressGeocodeCache.set(query, pending);
+  return pending;
 }
 
 async function fboFetch(url, options = {}) {
@@ -445,10 +518,249 @@ async function vacantDiagnostic() {
   return vacantDiagnosticRefreshing;
 }
 
+function onbidPropertyUrl(item) {
+  const onbidCltrno = firstValue(item, ["onbidCltrno", "onbidCltrNo"]);
+  const onbidPbancNo = firstValue(item, ["onbidPbancNo"]);
+  const pbctCdtnNo = firstValue(item, ["pbctCdtnNo"]);
+  const pbctNo = firstValue(item, ["pbctNo"]);
+  if (!onbidCltrno || !onbidPbancNo || !pbctCdtnNo || !pbctNo) return ONBID_PAGE_URL;
+  const rawPropertyCode = String(firstValue(item, ["cltrPrptDivCd", "prptDivCd"]) || "0005");
+  const params = new URLSearchParams({
+    cltrPrptDivCd: String(Number(rawPropertyCode) || 5),
+    cltrScrnGrpCd: "1",
+    onbidCltrno: String(onbidCltrno),
+    onbidPbancNo: String(onbidPbancNo),
+    pbctCdtnNo: String(pbctCdtnNo),
+    pbctNo: String(pbctNo)
+  });
+  return `https://www.onbid.co.kr/op/cltrpbancinf/cltrdtl/CltrDtlController/mvmnCltrDtl.do?${params}`;
+}
+
+function onbidAddress(item, fallback) {
+  const direct = firstValue(item, [
+    "radr", "roadAddr", "roadAddress", "zadr", "lotnoAddr", "address", "addr",
+    "locplc", "lctnAddr", "cltrLocplc", "prptLocplc"
+  ]);
+  return compactAddress(direct || firstValue(item, ["onbidCltrNm", "cltrNm"]) || fallback);
+}
+
+function onbidPropertyType(item) {
+  const text = [
+    firstValue(item, ["cltrUsgMclsCtgrNm", "ctgrLvlNm2"]),
+    firstValue(item, ["cltrUsgSclsCtgrNm", "usgNm"]),
+    firstValue(item, ["onbidCltrNm", "cltrNm"])
+  ].join(" ");
+  if (/농지|과수원|목장용지|(?:^|[\s·,(/])(?:전|답)(?=$|[\s·,)/])/.test(text)) return "farmland";
+  if (/주택|단독|다가구|다세대|농가|연립/.test(text)) return "house";
+  return "land";
+}
+
+function onbidRelevant(item) {
+  const text = [
+    firstValue(item, ["cltrUsgMclsCtgrNm", "ctgrLvlNm2"]),
+    firstValue(item, ["cltrUsgSclsCtgrNm", "usgNm"]),
+    firstValue(item, ["onbidCltrNm", "cltrNm"])
+  ].join(" ");
+  return /토지|대지|농지|과수원|목장|임야|주택|단독|다가구|다세대|농가|연립|창고|축사|(?:^|[\s·,(/])(?:전|답)(?=$|[\s·,)/])/.test(text);
+}
+
+function compactDate(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  return digits.length >= 8 ? `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}` : "";
+}
+
+function stableHash(value) {
+  let hash = 2166136261;
+  for (const character of String(value || "")) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+async function normalizeOnbid(item, regionName) {
+  const title = compactAddress(firstValue(item, ["onbidCltrNm", "cltrNm", "prptNm"]) || "온비드 부동산 공매");
+  const address = onbidAddress(item, regionName);
+  let lat = Number(firstValue(item, ["lat", "lttd", "latitude", "y"]));
+  let lng = Number(firstValue(item, ["lng", "lot", "lgtd", "longitude", "x"]));
+  if (!validKoreanCoordinates(lat, lng)) {
+    const coordinates = await geocodeAddressWithKakao(address);
+    lat = Number(coordinates?.lat);
+    lng = Number(coordinates?.lng);
+  }
+  const hasCoordinates = validKoreanCoordinates(lat, lng);
+  const managementNumber = String(firstValue(item, ["cltrMngNo", "scrnIndctCltrMngNo", "onbidCltrno", "onbidCltrNo"]) || stableHash(title));
+  const disposalCode = String(firstValue(item, ["dspsMthodCd"]));
+  const disposalName = String(firstValue(item, ["dspsMthodNm"]));
+  const dealType = disposalCode === "0002" || /임대|대부/.test(disposalName) ? "lease" : "sale";
+  const landArea = Number(firstValue(item, ["landSqms", "landArea", "ldar"]));
+  const buildingArea = Number(firstValue(item, ["bldSqms", "bldArea", "bldar"]));
+  const priceWon = Number(firstValue(item, ["lowstBidPrc", "minBidPrc", "frstBidPrc"]));
+  const category = compactAddress(firstValue(item, ["cltrUsgSclsCtgrNm", "usgNm", "ctgrLvlNm2", "cltrUsgMclsCtgrNm"]));
+  const deadline = firstValue(item, ["pbctDdlnDt", "bidEndDtm", "bidPrdEndDtm", "pbctEndDtm"]);
+  const agency = compactAddress(firstValue(item, ["orgNm", "regOrgNm"]));
+  const failedCount = Number(firstValue(item, ["usbdNft", "uscbdCnt"]));
+  return {
+    id: `onbid-${managementNumber.replace(/[^a-zA-Z0-9_-]/g, "-")}`,
+    externalId: managementNumber,
+    managedBy: "onbid-live",
+    source: "onbid",
+    propertyType: onbidPropertyType(item),
+    dealType,
+    title,
+    address,
+    lat: hasCoordinates ? lat : null,
+    lng: hasCoordinates ? lng : null,
+    price: priceWon > 0 ? priceWon / 10_000 : 0,
+    area: landArea > 0 ? landArea : buildingArea > 0 ? buildingArea : 0,
+    landCategory: category || "공매 부동산",
+    url: onbidPropertyUrl(item),
+    memo: [
+      "온비드 공식 공공데이터 API에서 제공한 입찰 중·입찰 예정 부동산입니다.",
+      agency ? `공고기관 ${agency}` : "",
+      deadline ? `입찰 마감 ${deadline}` : "",
+      Number.isFinite(failedCount) && failedCount > 0 ? `유찰 ${failedCount}회` : "",
+      hasCoordinates
+        ? "공개 주소를 지도 좌표로 변환한 위치이므로 입찰 전 소재지와 현장을 다시 확인하세요."
+        : "공식 데이터에 지도 좌표가 없어 목록에만 표시됩니다."
+    ].filter(Boolean).join("\n"),
+    verifiedAt: compactDate(firstValue(item, ["mdfcnYmd", "pbancDt"])) || new Date().toISOString().slice(0, 10),
+    syncedAt: new Date().toISOString(),
+    readOnly: true
+  };
+}
+
+async function fetchOnbidPayload(params) {
+  const url = new URL(ONBID_LIST_URL);
+  url.search = new URLSearchParams({
+    serviceKey: decodedServiceKey(),
+    pageNo: "1",
+    numOfRows: "100",
+    resultType: "json",
+    prptDivCd: "0007,0010,0005,0002,0003",
+    ...params
+  });
+  const response = await fetchWithTimeout(url, { headers: { Accept: "application/json" } }, 25_000);
+  if (!response.ok) throw new Error(`온비드 API 응답 오류 (${response.status})`);
+  return publicApiItems(await response.json());
+}
+
+async function fetchOnbidListings(legalCode, regionName) {
+  if (!liveConfig.onbidEnabled) return { listings: [], status: "disabled", message: "환경설정에서 비활성화됨" };
+  if (!decodedServiceKey()) {
+    return { listings: [], status: "setup-required", message: "DATA_GO_KR_SERVICE_KEY 설정 필요" };
+  }
+  const names = regionName.split(/\s+/).filter(Boolean);
+  const regionParams = {
+    lctnSdnm: names[0] || regionName,
+    ...(legalCode.length >= 5 && names[1] ? { lctnSggnm: names[1] } : {}),
+    ...(legalCode.length === 8 && names[2] ? { lctnEmdNm: names[2] } : {})
+  };
+  const rows = (await Promise.all([
+    fetchOnbidPayload({ ...regionParams, pvctTrgtYn: "N" }),
+    fetchOnbidPayload({ ...regionParams, pvctTrgtYn: "Y" })
+  ])).flat();
+  const unique = [...new Map(rows.map((item) => {
+    const key = String(firstValue(item, ["cltrMngNo", "scrnIndctCltrMngNo", "onbidCltrno", "onbidCltrNo"]) || stableHash(JSON.stringify(item)));
+    return [key, item];
+  })).values()].filter(onbidRelevant).slice(0, 80);
+  const listings = [];
+  for (let index = 0; index < unique.length; index += 5) {
+    listings.push(...await Promise.all(unique.slice(index, index + 5).map((item) => normalizeOnbid(item, regionName))));
+  }
+  const markerCount = listings.filter((listing) => validKoreanCoordinates(listing.lat, listing.lng)).length;
+  const coordinateMessage = liveConfig.kakaoRestApiKey ? `지도 ${markerCount}건` : `지도 ${markerCount}건 · Kakao 키 설정 시 주소 좌표 보완`;
+  return { listings, status: "connected", message: `${regionName} ${listings.length}건 · ${coordinateMessage}` };
+}
+
+function municipalityMatchesSelection(provider, legalCode) {
+  return provider.legalCode.startsWith(legalCode) || legalCode.startsWith(provider.legalCode);
+}
+
+function addressMatchesRegion(address, regionName) {
+  const parts = String(regionName || "").split(/\s+/).filter(Boolean);
+  return parts.every((part) => String(address || "").includes(part));
+}
+
+async function municipalVacantRows(provider) {
+  const cached = municipalVacantCache.get(provider.endpoint);
+  if (cached && Date.now() - cached.savedAt < 24 * 60 * 60_000) return cached.rows;
+  const url = new URL(provider.endpoint);
+  url.search = new URLSearchParams({
+    page: "1",
+    perPage: "1000",
+    returnType: "JSON",
+    serviceKey: decodedServiceKey()
+  });
+  const response = await fetchWithTimeout(url, { headers: { Accept: "application/json" } }, 25_000);
+  if (!response.ok) throw new Error(`${provider.name} 빈집 공공데이터 응답 오류 (${response.status})`);
+  const rows = publicApiItems(await response.json());
+  municipalVacantCache.set(provider.endpoint, { rows, savedAt: Date.now() });
+  return rows;
+}
+
+function normalizeMunicipalVacant(item, provider) {
+  const address = compactAddress(firstValue(item, ["도로명주소", "소재지 도로명주소", "지번주소", "주소"]));
+  if (!address) return null;
+  const lat = Number(firstValue(item, ["위도", "lat", "latitude"]));
+  const lng = Number(firstValue(item, ["경도", "lng", "longitude"]));
+  if (!validKoreanCoordinates(lat, lng)) return null;
+  const houseType = compactAddress(firstValue(item, ["주택유형", "용도"])) || "주택";
+  const structure = compactAddress(firstValue(item, ["구조유형", "구조"]));
+  const buildingYear = compactAddress(firstValue(item, ["건축연도", "건축년도"]));
+  const grade = compactAddress(firstValue(item, ["빈집등급", "등급", "등급판정결과"]));
+  const dataDate = compactDate(firstValue(item, ["데이터 기준일", "데이터기준일", "데이터기준일자"])) || provider.dataDate;
+  return {
+    id: `municipal-${stableHash(`${provider.name}:${address}`)}`,
+    externalId: stableHash(address),
+    managedBy: "municipal-vacant-live",
+    source: "municipal",
+    propertyType: "house",
+    dealType: "candidate",
+    title: `${provider.name} 빈집 현황 · ${houseType}`,
+    address,
+    lat,
+    lng,
+    price: 0,
+    area: Number(firstValue(item, ["연면적", "건축면적", "대지면적"])) || 0,
+    landCategory: grade || "빈집 현황",
+    url: provider.sourceUrl,
+    memo: [
+      `${provider.name}가 공공데이터포털에 공개한 빈집 현황입니다.`,
+      "매매·임대 의사가 확인된 매물이 아닙니다. 거래 가능 여부는 관할 지자체와 소유자에게 별도로 확인하세요.",
+      structure ? `구조 ${structure}` : "",
+      buildingYear ? `건축연도 ${buildingYear}` : "",
+      grade ? `빈집등급 ${grade}` : "",
+      `데이터 기준일 ${dataDate}`
+    ].filter(Boolean).join("\n"),
+    verifiedAt: dataDate,
+    syncedAt: new Date().toISOString(),
+    readOnly: true
+  };
+}
+
+async function fetchMunicipalVacantListings(legalCode, regionName) {
+  if (!liveConfig.municipalVacantEnabled) return { listings: [], status: "disabled", message: "환경설정에서 비활성화됨" };
+  const providers = MUNICIPAL_VACANT_PROVIDERS.filter((provider) => municipalityMatchesSelection(provider, legalCode));
+  if (!providers.length) return { listings: [], status: "unsupported", message: "선택 지역에 연결된 지자체 공개 데이터 없음" };
+  if (!decodedServiceKey()) {
+    return { listings: [], status: "setup-required", message: "DATA_GO_KR_SERVICE_KEY 설정 필요" };
+  }
+  const listings = (await Promise.all(providers.map(async (provider) => {
+    const rows = await municipalVacantRows(provider);
+    return rows
+      .map((item) => normalizeMunicipalVacant(item, provider))
+      .filter((listing) => listing && addressMatchesRegion(listing.address, regionName));
+  }))).flat();
+  return { listings, status: "connected", message: `${regionName} 빈집 후보 ${listings.length}건 · 거래 여부 확인 필요` };
+}
+
 function connectors(legalCode, regionName) {
   return [
     { key: "farmland", run: () => fetchFarmlandListings(legalCode, regionName) },
-    { key: "vacant", run: () => fetchVacantHouseListings(legalCode, regionName) }
+    { key: "vacant", run: () => fetchVacantHouseListings(legalCode, regionName) },
+    { key: "onbid", run: () => fetchOnbidListings(legalCode, regionName) },
+    { key: "municipal", run: () => fetchMunicipalVacantListings(legalCode, regionName) }
   ];
 }
 
@@ -805,7 +1117,9 @@ async function externalProviders(legalCode, regionName) {
     disco: { supported: false, url: "https://disco.re/", message: "공식 지역 딥링크를 제공하지 않습니다." },
     hanbang,
     ddangya: { supported: true, method: "GET", url: `https://ddangya.com/list?code=${encodeURIComponent(ddangyaCode)}`, message: `${regionName} 매물로 바로 이동` },
-    valuemap: { supported: false, url: "https://www.valueupmap.com/", message: "공식 지역 딥링크를 제공하지 않습니다." }
+    valuemap: { supported: false, url: "https://www.valueupmap.com/", message: "공식 지역 딥링크를 제공하지 않습니다." },
+    binzibe: { supported: true, method: "GET", url: BINZIBE_SALE_URL, message: `빈집애에서 '${regionName}'을 검색해 보세요.` },
+    onbid: { supported: true, method: "GET", url: ONBID_PAGE_URL, message: `온비드에서 '${regionName}' 공매를 추가 확인하세요.` }
   };
   externalLinkCache.set(key, { providers, savedAt: Date.now() });
   return providers;
