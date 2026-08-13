@@ -4,51 +4,102 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#202b44" />
-    <title>Journey RPG · 모바일 청첩장 제작</title>
+    <title>Journey Wedding · 모바일 청첩장 만들기</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Press+Start+2P&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Jua&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="/">JOURNEY RPG <span>WEDDING EDITOR</span></a>
+      <a class="brand" href="/">JOURNEY <span>WEDDING</span></a>
       <div class="header-actions">
-        <span class="desktop-only">원본 픽셀 RPG 청첩장 템플릿</span>
-        <button class="save-button" id="saveButton" type="button">저장하기</button>
+        <span class="desktop-only">나만의 이야기를 담은 모바일 청첩장</span>
+        <button class="share-button" id="shareButton" type="button">공유하기</button>
       </div>
     </header>
 
     <main class="app-layout">
-      <aside class="editor-panel" aria-label="청첩장 편집기">
+      <aside class="editor-panel" aria-label="청첩장 만들기">
         <div class="editor-heading">
-          <p>MAKE YOUR OWN STORY</p>
-          <h1>우리의 모험을<br />장면으로 만드세요.</h1>
-          <span>변경 내용은 미리보기와 이 기기에 바로 저장됩니다.</span>
+          <p>MAKE &amp; SHARE IN MINUTES</p>
+          <h1>우리의 결혼식,<br />우리답게 초대하세요.</h1>
+          <span>정보를 채우고, 분위기를 고르고, 링크 하나로 소중한 분들께 전해보세요.</span>
         </div>
 
-        <section class="editor-section">
-          <div class="section-title"><h2>초대장 기본 정보</h2></div>
-          <label>두 사람의 이름<input id="coupleTitle" maxlength="50" /></label>
+        <ol class="creation-steps" aria-label="제작 단계">
+          <li class="active"><b>01</b><span>기본 정보</span></li>
+          <li><b>02</b><span>이야기 꾸미기</span></li>
+          <li><b>03</b><span>링크 공유</span></li>
+        </ol>
+
+        <section class="editor-section first-section">
+          <div class="section-title"><h2>두 분의 결혼식 정보</h2><small>필수</small></div>
+          <label>신랑 · 신부 이름<input id="coupleTitle" maxlength="50" placeholder="예: 민준 & 서연" /></label>
           <div class="two-columns">
-            <label>챕터 이름<input id="chapter" maxlength="50" /></label>
-            <label>메인 문구<input id="headline" maxlength="70" /></label>
+            <label>결혼식 일시<input id="weddingDate" maxlength="80" placeholder="2026. 10. 17. SAT · 1:30 PM" /></label>
+            <label>예식 장소<input id="venue" maxlength="80" placeholder="예: 가든 스테이지, 서울" /></label>
           </div>
+          <label>청첩장 제목<input id="headline" maxlength="70" placeholder="예: 첫 번째 모험의 끝에서" /></label>
+        </section>
+
+        <section class="editor-section">
+          <div class="section-title"><h2>청첩장 분위기</h2><small>선택</small></div>
+          <p class="section-description">사진이 없어도 분위기 있는 청첩장을 바로 만들 수 있어요.</p>
+          <div class="template-list" id="templateList" aria-label="청첩장 템플릿"></div>
+        </section>
+
+        <section class="editor-section">
+          <div class="section-title"><h2>전체 글꼴</h2><small>선택</small></div>
+          <p class="section-description">청첩장에 표시되는 제목, 본문, 버튼과 안내 문구를 한 번에 바꿔보세요.</p>
+          <div class="font-list" id="fontList" aria-label="청첩장 전체 글꼴"></div>
+        </section>
+
+        <section class="editor-section typography-section">
+          <div class="section-title"><h2>글자별 미세 조정</h2><small>상세</small></div>
+          <p class="section-description">조정할 위치를 선택하면 해당 글자만 변경돼요.</p>
+          <label>조정할 글자<select id="typographyTarget"></select></label>
+          <label>개별 글꼴<select id="typographyFont" data-typography-property="fontTheme"></select></label>
           <div class="two-columns">
-            <label>예식 일시<input id="weddingDate" maxlength="80" /></label>
-            <label>예식 장소<input id="venue" maxlength="80" /></label>
+            <label>굵기
+              <select id="typographyWeight" data-typography-property="fontWeight">
+                <option value="400">보통</option><option value="500">중간</option><option value="600">굵게</option><option value="700">아주 굵게</option>
+              </select>
+            </label>
+            <label>정렬
+              <select id="typographyAlign" data-typography-property="align">
+                <option value="left">왼쪽</option><option value="center">가운데</option><option value="right">오른쪽</option>
+              </select>
+            </label>
+          </div>
+          <label><span class="range-heading">글자 크기 <output id="typographySizeValue"></output></span><input id="typographySize" data-typography-property="fontSize" type="range" min="6" max="42" step="1" /></label>
+          <label><span class="range-heading">자간 <output id="typographySpacingValue"></output></span><input id="typographySpacing" data-typography-property="letterSpacing" type="range" min="-2" max="8" step="0.1" /></label>
+          <label><span class="range-heading">행간 <output id="typographyLineHeightValue"></output></span><input id="typographyLineHeight" data-typography-property="lineHeight" type="range" min="1" max="2.4" step="0.05" /></label>
+          <label>글자 색상 <small class="default-hint" id="typographyColorDefault">현재 디자인의 기본색</small><input id="typographyColor" data-typography-property="color" type="color" /></label>
+          <button class="type-reset-button" id="resetTypographyButton" type="button">이 글자 설정 초기화</button>
+        </section>
+
+        <section class="editor-section music-section">
+          <div class="section-title"><h2>배경 음악</h2><small>선택</small></div>
+          <p class="section-description">두 분을 닮은 음악을 넣어 청첩장의 첫인상을 완성해 보세요.</p>
+          <label>음악 파일
+            <span class="upload-control"><input id="musicUpload" type="file" accept="audio/mpeg,audio/mp4,audio/ogg,audio/wav,.mp3,.m4a,.ogg,.wav" /><span id="musicUploadLabel">MP3, M4A, OGG, WAV · 최대 10MB</span></span>
+          </label>
+          <div class="music-status" id="musicStatus" hidden>
+            <span id="musicName"></span><button id="removeMusicButton" type="button">음악 삭제</button>
           </div>
         </section>
 
         <section class="editor-section">
           <div class="section-title">
-            <h2>모험 장면</h2>
+            <h2>우리의 이야기</h2>
             <button class="tiny-button" id="addSceneButton" type="button">+ 장면 추가</button>
           </div>
+          <p class="section-description">만남부터 결혼식까지, 원하는 만큼 장면을 이어보세요.</p>
           <div class="scene-list" id="sceneList"></div>
           <div class="scene-actions">
-            <button id="moveUpButton" type="button">← 앞으로</button>
-            <button id="moveDownButton" type="button">뒤로 →</button>
+            <button id="moveUpButton" type="button">앞으로</button>
+            <button id="moveDownButton" type="button">뒤로</button>
             <button class="danger" id="deleteSceneButton" type="button">장면 삭제</button>
           </div>
         </section>
@@ -56,34 +107,45 @@
         <section class="editor-section scene-fields">
           <div class="section-title"><h2>선택한 장면 꾸미기</h2></div>
           <label>장면 이름<input id="sceneLabel" maxlength="40" /></label>
-          <label>배경 이미지
-            <span class="upload-control"><input id="backgroundUpload" type="file" accept="image/*" /><span>내 사진·일러스트 올리기</span></span>
+          <label>배경 사진
+            <span class="upload-control"><input id="backgroundUpload" type="file" accept="image/*" /><span>두 분의 사진 또는 일러스트 올리기</span></span>
           </label>
           <div class="two-columns">
-            <label>말하는 사람<input id="speaker" maxlength="30" /></label>
+            <label>이야기 주인공<input id="speaker" maxlength="30" /></label>
             <label>장면 태그<input id="sceneTag" maxlength="30" /></label>
           </div>
-          <label>대화 문구<textarea id="dialogue" rows="4" maxlength="260"></textarea></label>
+          <label>전할 이야기<textarea id="dialogue" rows="4" maxlength="260" placeholder="두 분만의 이야기를 들려주세요."></textarea></label>
           <div class="two-columns controls">
-            <label>문구 색상<input id="textColor" type="color" /></label>
+            <label>제목 색상<input id="textColor" type="color" /></label>
             <label>배경 어둡기<input id="overlay" type="range" min="0" max="75" /></label>
           </div>
           <label>장면 제목 위치<input id="titlePosition" type="range" min="4" max="56" /></label>
         </section>
 
         <section class="editor-section">
-          <div class="section-title"><h2>마지막 초대 안내</h2></div>
+          <div class="section-title"><h2>초대 안내</h2><small>선택</small></div>
           <label>초대 문구<textarea id="invitationMessage" rows="3" maxlength="200"></textarea></label>
           <div class="two-columns">
-            <label>계좌/연락처<input id="account" maxlength="100" /></label>
-            <label>오시는 길<input id="directions" maxlength="100" /></label>
+            <label>마음 전하실 곳<input id="account" maxlength="100" placeholder="계좌번호 또는 안내 문구" /></label>
+            <label>오시는 길<input id="directions" maxlength="100" placeholder="대중교통·주차 안내" /></label>
           </div>
         </section>
-        <button class="reset-button" id="resetButton" type="button">기본 이야기로 되돌리기</button>
+        <section class="editor-section">
+          <div class="section-title"><h2>웨딩 포토</h2><small>선택</small></div>
+          <p class="section-description">두 분의 가장 빛나는 순간을 최대 6장까지 담아보세요.</p>
+          <label>사진 추가
+            <span class="upload-control"><input id="galleryUpload" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple /><span id="galleryUploadLabel">JPG, PNG, WEBP · 사진당 최대 5MB</span></span>
+          </label>
+          <div class="gallery-editor" id="galleryEditor" aria-label="업로드한 웨딩 사진"></div>
+        </section>
+        <button class="reset-button" id="resetButton" type="button">기본 예시로 돌아가기</button>
       </aside>
 
       <section class="preview-area" aria-label="모바일 청첩장 미리보기">
-        <p class="preview-label">MOBILE INVITATION PREVIEW</p>
+        <div class="preview-heading">
+          <p class="preview-label">MOBILE INVITATION PREVIEW</p>
+          <span id="savedStatus">자동 저장됨</span>
+        </div>
         <div class="phone-frame" id="phoneFrame">
           <div class="phone-top"><span id="previewCoupleTitle">상원 &amp; 다정</span><span id="sceneCounter">01 / 03</span></div>
           <div class="game-scene" id="gameScene">
@@ -92,10 +154,11 @@
               <span id="previewTag">THE FIRST PATH</span>
               <strong id="previewSceneLabel">처음의 길</strong>
             </div>
-            <button class="sound-button" id="soundButton" type="button" aria-label="소리 켜기/끄기">♪</button>
+            <button class="sound-button" id="soundButton" type="button" aria-label="소리 켜기 또는 끄기">♪</button>
           </div>
+          <audio id="backgroundMusic" loop preload="metadata"></audio>
           <div class="dialogue-window" id="dialogueWindow">
-            <div class="portrait" aria-hidden="true"><span class="hair"></span><span class="face">•ᴗ•</span><span class="coat"></span></div>
+            <div class="portrait" aria-hidden="true"><span class="hair"></span><span class="face">♥</span><span class="coat"></span></div>
             <div class="dialogue-content">
               <p id="previewSpeaker">다정</p>
               <h2 id="previewDialogue"></h2>
@@ -103,7 +166,7 @@
             <button class="next-button" id="nextButton" type="button">A<br /><small>다음</small></button>
           </div>
           <section class="invitation-card" id="invitationCard" hidden>
-            <p class="card-kicker">THE FINAL DESTINATION</p>
+            <p class="card-kicker">OUR WEDDING DAY</p>
             <h2 id="cardHeadline"></h2>
             <p class="card-message" id="cardMessage"></p>
             <dl>
@@ -112,15 +175,38 @@
               <div><dt>WAY</dt><dd id="cardDirections"></dd></div>
               <div><dt>GIFT</dt><dd id="cardAccount"></dd></div>
             </dl>
+            <div class="photo-gallery" id="photoGallery" hidden>
+              <p>OUR MOMENTS</p>
+              <div id="photoGrid"></div>
+            </div>
           </section>
           <div class="phone-controls">
-            <button id="previousButton" type="button">◀ 이전</button>
-            <button id="guideButton" type="button">초대 안내</button>
+            <button id="previousButton" type="button">← 이전</button>
+            <button id="guideButton" type="button">예식 안내</button>
           </div>
         </div>
-        <p class="mobile-hint">화면을 터치하거나 ‘다음’을 눌러 이야기를 이어가세요.</p>
+        <div class="share-panel">
+          <div><strong>청첩장이 완성되었나요?</strong><span>링크 하나로 카카오톡, 문자, SNS에 공유할 수 있어요.</span></div>
+          <button id="previewShareButton" type="button">링크 공유</button>
+        </div>
+        <p class="mobile-hint">화면을 터치하거나 다음 버튼을 눌러 이야기를 이어가 보세요.</p>
       </section>
     </main>
+    <dialog class="photo-lightbox" id="photoLightbox" aria-label="웨딩 사진 크게 보기">
+      <button class="lightbox-close" id="lightboxClose" type="button" aria-label="사진 크게 보기 닫기">×</button>
+      <button class="lightbox-nav previous" id="lightboxPrevious" type="button" aria-label="이전 사진">←</button>
+      <div class="lightbox-viewport" id="lightboxViewport">
+        <img id="lightboxImage" alt="웨딩 사진 크게 보기" draggable="false" />
+        <canvas id="lightboxCanvas" aria-label="확대한 웨딩 사진"></canvas>
+      </div>
+      <button class="lightbox-nav next" id="lightboxNext" type="button" aria-label="다음 사진">→</button>
+      <p id="lightboxCounter"></p>
+      <div class="lightbox-zoom" aria-label="사진 확대 및 축소">
+        <button id="zoomOutButton" type="button" aria-label="사진 축소">−</button>
+        <button id="zoomResetButton" type="button" aria-label="사진 크기 초기화">100%</button>
+        <button id="zoomInButton" type="button" aria-label="사진 확대">+</button>
+      </div>
+    </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="app.js"></script>
   </body>
